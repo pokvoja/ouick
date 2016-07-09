@@ -1,0 +1,36 @@
+ <div style="padding-left:130px;padding-right:200px;">
+  <h3>Tables</h3>
+  <div ng-controller="createTableController">
+  <a class="btn btn-primary pull-right" style="margin-top:-40px" ng-click="addTableFormOpen = !addTableFormOpen" role="button" ng-show="!addTableFormOpen">Add Table</a>
+    <form ng-show="addTableFormOpen" ng-submit="createTable()">
+      <h3>Add Table</h3>
+      <label for="title">Title</label>
+      <div class="input-group">
+        <input type="text" class="form-control" ng-model="table.title" id="title">
+      </div>
+    </form>
+  </div>
+  <div class="list-group">
+        <a href="#/tables/{{n.id}}/" class="list-group-item" ng-repeat="n in tables track by $index">
+          <span>{{n.title}}</span>
+          <span class="glyphicon glyphicon-chevron-right pull-right"></span>
+        </a>
+  </div>
+  <!--<h3>Forms</h3>
+  <div ng-controller="createTableController">
+  <a class="btn btn-primary pull-right" style="margin-top:-40px" ng-click="addTableFormOpen = !addTableFormOpen" role="button" ng-show="!addTableFormOpen">Add Table</a>
+    <form ng-show="addTableFormOpen" ng-submit="createTable()">
+      <h3>Add Table</h3>
+      <label for="title">Title</label>
+      <div class="input-group">
+        <input type="text" class="form-control" ng-model="table.title" id="title">
+      </div>
+    </form>
+  </div>
+  <div class="list-group">
+        <a href="#/tables/{{n.id}}/" class="list-group-item" ng-repeat="n in tables track by $index">
+          <span>{{n.title}}</span>
+          <span class="glyphicon glyphicon-chevron-right pull-right"></span>
+        </a>
+  </div>-->
+</div>

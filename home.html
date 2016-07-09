@@ -1,0 +1,25 @@
+ <div style="padding-left:130px;padding-right:200px;">
+    <h3>Datasets</h3>
+
+
+    <div ng-controller="createDatasetController">
+      <a class="btn btn-primary pull-right" style="margin-top:-40px" ng-click="addDatasetFormOpen = !addDatasetFormOpen" role="button" ng-show="!addDatasetFormOpen">Add Dataset</a>
+      <form ng-show="addDatasetFormOpen" ng-submit="createDataset()">
+        <h3>Add Dataset</h3>
+        <label for="title">Title</label>
+        <div class="input-group">
+          <input type="text" class="form-control" ng-model="dataset.title" id="title">
+        </div>
+      </form>
+    </div>
+
+
+
+  <a class="btn btn-primary pull-right" style="margin-top:-40px" ng-click="addDatasetFormOpen = !addDatasetFormOpen" role="button" ng-show="!addTableFormOpen">Add Dataset</a>
+    <div class="list-group">
+        <a href="#/datasets/{{n.id}}/" class="list-group-item" ng-repeat="n in datasets track by $index">
+          <span>{{n.title}}</span>
+          <span class="glyphicon glyphicon-chevron-right pull-right"></span>
+        </a>
+    </div>
+</div>

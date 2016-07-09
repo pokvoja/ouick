@@ -1,0 +1,83 @@
+ <div style="padding-left:130px;padding-right:200px;">
+  <h1>{{title}}</h1>
+
+    <div>
+      <div class="panel panel-default">
+            <div class="panel-heading">
+              <h4 class="panel-title">
+                <a data-toggle="collapse" data-parent="#accordion" data-target="#collapseOne"><span class="glyphicon glyphicon-folder-close">
+                  </span>Forms</a>
+              </h4>
+            </div>
+            <div id="collapseOne" class="panel-collapse collapse">
+              <ul class="list-group">
+                <li class="list-group-item"><span class="glyphicon glyphicon-pencil text-primary"></span><a href="http://fb.com/moinakbarali">Articles</a></li>
+
+                <li class="list-group-item"><span class="glyphicon glyphicon-flash text-success"></span><a href="http://fb.com/moinakbarali">News</a></li>
+
+                <li class="list-group-item"><span class="glyphicon glyphicon-file text-info"></span><a href="http://fb.com/moinakbarali">Newsletters</a></li>
+
+                <li class="list-group-item"> <span class="glyphicon glyphicon-comment text-success"></span><a href="http://fb.com/moinakbarali">Comments</a><span class="badge">42</span></li>
+
+              </ul>
+            </div>
+      </div>
+    </div>
+    <div>
+      <div class="panel panel-default">
+            <div class="panel-heading">
+              <h4 class="panel-title">
+                <a data-toggle="collapse" data-parent="#accordion" data-target="#collapseTwo"><span class="glyphicon glyphicon-folder-close">
+                  </span>Views</a>
+              </h4>
+            </div>
+            <div id="collapseTwo" class="panel-collapse collapse">
+              <ul class="list-group">
+                <li class="list-group-item"><span class="glyphicon glyphicon-pencil text-primary"></span><a href="http://fb.com/moinakbarali">Articles</a></li>
+
+                <li class="list-group-item"><span class="glyphicon glyphicon-flash text-success"></span><a href="http://fb.com/moinakbarali">News</a></li>
+
+                <li class="list-group-item"><span class="glyphicon glyphicon-file text-info"></span><a href="http://fb.com/moinakbarali">Newsletters</a></li>
+
+                <li class="list-group-item"> <span class="glyphicon glyphicon-comment text-success"></span><a href="http://fb.com/moinakbarali">Comments</a><span class="badge">42</span></li>
+
+              </ul>
+            </div>
+      </div>
+    </div>
+
+  
+      <form name="addRow" ng-submit="createRow()" class="my-form" ng-init="addRowFormOpen = true" ng-show="addRowFormOpen">
+  <table class="table" ng-if="tableData.fields" datatable="ng" class="row-border hover">
+    <thead>
+      <th ng-repeat="field in tableData.fields track by $index">
+        {{field.title}}
+      </th>
+      <th>
+        <a href="#/tables/{{tableId}}/createField/">Add Column</a>
+      </th>
+    </thead>
+    <tbody>
+      <tr ng-repeat="i in [numberOfRows(tableId)] | toRange">
+        <td ng-repeat="n in [numberOfFields(tableId)-1] | toRange" id="field_{{tableId}}_{{n+1}}_{{i+1}}" data-value="{{getFieldValue(tableId, n+1, i+1)}}">
+
+
+        <span ng-click="loadInlineEditor(tableId, n+1, i+1)">{{getFieldValue(tableId, n+1, i+1)}}</span>
+        <div ng-bind-html="renderHtml(generateHistoryButton(tableId, n+1, i+1))" compile-template></div>
+
+
+        </td>
+        <td>
+                                        <button type="button" ng-click="removeRow(tableId, n+1, i+1)" class="btn btn-danger"><i class="fa fa-trash-o"></i></button>
+        </td>
+      </tr>
+    </tbody>
+    <tfoot>
+            <tr>
+              <td ng-repeat="n in [numberOfFields(tableId)-1] | toRange"><span ng-bind-html="renderHtml(generateFieldInput(n+1, tableId))" compile-template></span></td>
+              <td><button type="submit" class="btn btn-success"><i class="fa fa-plus"></i></button></td>
+            </tr>
+    </tfoot>
+  </table>
+      </form>
+</div>

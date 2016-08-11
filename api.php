@@ -33,9 +33,19 @@ class ouick_table{
   public function numberOfRows(){
 
     $db = new db();
-    $result = $db->query("SELECT MAX(row) FROM field_values WHERE field_id IN (".implode(',',$this->getFieldIdArray()).")");
+
+    $query = "SELECT MAX(row) FROM field_values WHERE field_id IN (".implode(',',$this->getFieldIdArray()).")";
+
+    $result = $db->query($query);
 
     return $result[0];
+  }
+  public function deleteRow($row_id){
+
+    $db = new db();
+    $query = "DELETE FROM field_values WHERE field_id IN (".implode(',',$this->getFieldIdArray()).") AND row=".(int)$row_id;
+    $db->query($query);
+    echo 1;
   }
   public function createRow($fields){
 
@@ -66,16 +76,23 @@ class ouick_table{
     foreach($tables AS $table){
       $result['id'] = $table['id'];
       $result['title'] = $table['title'];
-
+      $result['fields'] = array();
       //select fields for table
-      $result['fields'] = $db->shiftResult($db->select('fields',array('table_id',$table['id'])),'table_id');
+      $tempFields = $db->shiftResult($db->select('fields',array('table_id',$table['id'])),'table_id');
+      foreach($tempFields AS $fieldData){
+        $newField = array();
+        foreach($fieldData AS $index=>$value)
+          if(!is_numeric($index))
+            $newField[$index] = $value;
 
+        $result['fields'][] = $newField;
+      }
       $result['field_values'] = array();
       if(is_array($result['fields']))
       foreach($result['fields'] AS $table_field){
         if(is_array($table_field)){
           //select field values for field ordered by row
-          $resultz = $db->shiftResult($db->select('field_values',array('field_id',$table_field['id']), null, array('row','DESC')), 'field_id');
+          $resultz = $db->shiftResult($db->select('field_values',array('field_id',$table_field['id']), array('field_id', 'row','value', 'timestamp'), array('row','DESC')), 'field_id');
           if(is_array($resultz))
             $result['field_values'] = array_merge($resultz, $result['field_values']);
         }
@@ -94,6 +111,7 @@ class ouick_field{
   public $type;
   public $title;
   public $value;
+  public $additional;
   public $default_value;
   public function __construct($id=null){
     if($id)
@@ -103,6 +121,7 @@ class ouick_field{
     $values['table_id'] = $this->table_id;
     $values['type'] = $this->type;
     $values['title'] = $this->title;
+    $values['additional'] = $this->additional;
     $values['default_value'] = $this->default_value;
 
     $db = new db();
@@ -149,6 +168,7 @@ switch($_GET['action']){
     $ouick_field->type = $_POST['type'];
     $ouick_field->title = $_POST['title'];
     $ouick_field->default_value = $_POST['default_value'];
+    $ouick_field->additional = json_encode($_POST['additional']);
     $ouick_field->save();
     echo $ouick_field->id;
 
@@ -166,6 +186,11 @@ switch($_GET['action']){
     $ouick_table->createRow($_POST['fields']);
 
   break;
+  case 'rows/remove':
+
+    $ouick_table = new ouick_table($_POST['table_id']);
+    $ouick_table->deleteRow($_POST['row_id']);
+  break;
   case'getFieldTypes':
     $db = new db();
     echo json_encode($db->shiftResult($db->query('SELECT * FROM `field_types`'),'id'));
@@ -174,7 +199,7 @@ switch($_GET['action']){
   case 'insertTestFields':
     $i = 8;
     $db = new db();
-    while($i < 64){
+    while($i < 10000){
 
       $values = array();
       $values['field_id'] = ($i%8)+1;
@@ -189,6 +214,87 @@ switch($_GET['action']){
       echo $i;
 
     }
+  break;
+  case'mysql/getDBInformation':
+
+
+
+
+    $db = new db();
+    $db->updateConnection($_POST['host'], $_POST['port'], $_POST['dbname'], $_POST['dbuser'], $_POST['dbpassword'], 'utf8');
+    echo json_encode($db->getDBInformation());
+
+  break;
+  case'mysql/importTables':
+
+
+
+
+
+    foreach($_POST['tableData'] AS $table_name=>$fieldArray){
+      echo 'Create Table '.$table_name.' in dataset '.$fieldArray['dataset_id']."\n";
+
+      $ouick_table = new ouick_table();
+      $ouick_table->title = $table_name;
+      $ouick_table->dataset_id = $fieldArray['dataset_id'];
+      $ouick_table->save();
+      $table_id = $ouick_table->table_id;
+
+      echo "Adding fields...\n";
+      $createdFields = array();
+      $fieldIds = array();
+      foreach($fieldArray['fields'] AS $fieldData){
+        foreach($fieldData AS $field_name=>$field_type){
+
+          $ouick_field = new ouick_field();
+          $ouick_field->table_id = $table_id;
+          $ouick_field->type = $field_type;
+          $ouick_field->title = $field_name;
+          $ouick_field->default_value = '';
+          $ouick_field->save();
+
+          $fieldIds[$field_name] = $ouick_field->id;
+           
+          $createdFields[] = $field_name;
+          echo '  ...field '.$field_name.' was imported as '.$field_type."\n";
+
+        }
+      }
+      var_dump($createdFields);
+      if($fieldArray['import_data'] == '1'){
+
+        $db = new db();
+
+        if(!isset($_POST['mysqlinfo']['dbpassword']))
+          $_POST['mysqlinfo']['dbpassword'] = '';
+        $db->updateConnection($_POST['mysqlinfo']['host'], $_POST['mysqlinfo']['port'], $_POST['mysqlinfo']['dbname'], $_POST['mysqlinfo']['dbuser'], $_POST['mysqlinfo']['dbpassword'], 'utf8');
+
+        $query = 'SELECT '.$db->escape(join(',',$createdFields)).' FROM '.$db->escape($table_name);
+        echo $query;
+
+        $rows = $db->shiftResult($db->query($query),$createdFields[0]);
+        var_dump($rows);
+        foreach($rows AS $rowFields){
+          $fields = array();
+          foreach($rowFields AS $field_name=>$field_value){
+            if(!is_numeric($field_name)){
+              echo $field_name.' : '.$field_value;
+              $field_id = $fieldIds[$field_name];
+              $fields[$field_id] = $field_value;
+            }
+          }
+
+
+          echo $ouick_table->createRow($fields);
+          var_dump($fields);
+          
+        }
+
+        //start to import data;
+
+      }
+    }
+
   break;
 }
 

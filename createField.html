@@ -1,6 +1,11 @@
  <div style="padding-left:130px;padding-right:200px;">
   <h1>Add Field To Table</h1>
   <div>
+  <style>
+    label{clear:both;
+        display: block;
+        margin:50px 0;}
+  </style>
       <form name="myForm" ng-controller="createFieldController" ng-submit="createField()" class="my-form">
         <label class="item item-input item-floating-label">
                 <span class="input-label">Type</span>
@@ -11,8 +16,19 @@
                 <input type="text" placeholder="title" id="title" ng-model="field.title">
         </label>
         <label class="item item-input item-floating-label">
-                <span class="input-label">Default Value</span>
+                <span class="input-label">Default Value{{field.type}}</span>
                 <input type="text" id="default_value" ng-model="field.default_value">
+        </label>
+        <label class="item item-input item-floating-label" ng-if="field.type === '8'">
+                <span class="input-label">Dropdown Table</span>{{dropDownTableData}}
+                <select name="table" ng-model="field.additional.dropdown_table" ng-change="updateDropDownTableData(); field.additional.dropdown_shown_values = [];" ng-options="tablDD.id as tablDD.title for tablDD in tables"></select>
+        </label>
+        <label class="item item-input item-floating-label" ng-if="field.type === '8'">
+                <span class="input-label">Shown value(s)</span>
+                <button ng-repeat="fieldData in dropDownTableData.fields" type="button" class="btn btn-default btn-sm" uib-btn-checkbox="" ng-model="field.additional.dropdown_shown_values[$index]" btn-checkbox-true="fieldData.id" style="" ng-click="log()">
+                            {{fieldData.title}}
+                 </button>
+                 {{field}}
         </label>
         <button type="submit" class="button button-full button-positive" value="Create Case">Create Case</button>
     </form>

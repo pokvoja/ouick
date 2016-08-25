@@ -1,5 +1,7 @@
  <div style="padding-left:130px;padding-right:200px;">
   <h3>Tables</h3>
+  <a href="#/datasets/{{dataset_id}}/import" class="btn btn-primary pull-right" style="margin-top:-80px" role="button">Import</a>
+
   <div ng-controller="createTableController">
   <a class="btn btn-primary pull-right" style="margin-top:-40px" ng-click="addTableFormOpen = !addTableFormOpen" role="button" ng-show="!addTableFormOpen">Add Table</a>
     <form ng-show="addTableFormOpen" ng-submit="createTable()">
@@ -16,8 +18,8 @@
           <span class="glyphicon glyphicon-chevron-right pull-right"></span>
         </a>
   </div>
-  <!--<h3>Forms</h3>
-  <div ng-controller="createTableController">
+
+  <!--<div ng-controller="createTableController">
   <a class="btn btn-primary pull-right" style="margin-top:-40px" ng-click="addTableFormOpen = !addTableFormOpen" role="button" ng-show="!addTableFormOpen">Add Table</a>
     <form ng-show="addTableFormOpen" ng-submit="createTable()">
       <h3>Add Table</h3>

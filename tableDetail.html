@@ -1,6 +1,11 @@
  <div style="padding-left:130px;padding-right:200px;">
   <h1>{{title}}</h1>
-
+<style>
+  td span{
+    min-width:1em;
+    border:1px dotted #c9c9c9;
+  }
+</style>
     <div>
       <div class="panel panel-default">
             <div class="panel-heading">
@@ -11,13 +16,9 @@
             </div>
             <div id="collapseOne" class="panel-collapse collapse">
               <ul class="list-group">
-                <li class="list-group-item"><span class="glyphicon glyphicon-pencil text-primary"></span><a href="http://fb.com/moinakbarali">Articles</a></li>
+                <li class="list-group-item"><span class="glyphicon glyphicon-pencil text-primary"></span><a href="#/tables/{{tableId}}/createForm">Create Form{{tableData.forms}}</a></li>
 
-                <li class="list-group-item"><span class="glyphicon glyphicon-flash text-success"></span><a href="http://fb.com/moinakbarali">News</a></li>
-
-                <li class="list-group-item"><span class="glyphicon glyphicon-file text-info"></span><a href="http://fb.com/moinakbarali">Newsletters</a></li>
-
-                <li class="list-group-item"> <span class="glyphicon glyphicon-comment text-success"></span><a href="http://fb.com/moinakbarali">Comments</a><span class="badge">42</span></li>
+                <li class="list-group-item" ng-repeat="form in tableData.forms"><span class="glyphicon glyphicon-flash text-success"></span><a href="http://fb.com/moinakbarali">{{form}}</a></li>
 
               </ul>
             </div>
@@ -48,7 +49,7 @@
 
   
       <form name="addRow" ng-submit="createRow()" class="my-form" ng-init="addRowFormOpen = true" ng-show="addRowFormOpen">
-  <table class="table" ng-if="tableData.fields" datatable="ng" class="row-border hover">
+  <table class="table" ng-if="tableData.fields" datatable="ng" dt-options="dtOptions" class="row-border hover">
     <thead>
       <th ng-repeat="field in tableData.fields track by $index">
         {{field.title}}
@@ -58,11 +59,10 @@
       </th>
     </thead>
     <tbody>
-      <tr ng-repeat="i in [numberOfRows(tableId)] | toRange">
+      <tr ng-repeat="i in [numberOfRows(tableId)] | toRange" ng-if="rowExists(tableId, i+1)">
         <td ng-repeat="n in [numberOfFields(tableId)-1] | toRange" id="field_{{tableId}}_{{n+1}}_{{i+1}}" data-value="{{getFieldValue(tableId, n+1, i+1)}}">
 
-
-        <span ng-click="loadInlineEditor(tableId, n+1, i+1)">{{getFieldValue(tableId, n+1, i+1)}}</span>
+        <span ng-click="loadInlineEditor(tableId, n+1, i+1)">{{getFieldValue(tableId, n+1, i+1, true)}}</span>
         <div ng-bind-html="renderHtml(generateHistoryButton(tableId, n+1, i+1))" compile-template></div>
 
 

@@ -1,0 +1,221 @@
+<style>
+
+  .btn-group{
+    border-radius: 0;
+  }
+
+  .field-options{
+    display:none;
+  }
+
+  .form_editor_row:hover .field-options{
+    display:block;
+  }
+
+  .form_editor_row{
+    position:relative;
+    height: 75px;
+    border-bottom:1px solid #c9c9c9;
+    clear: both;
+  }
+
+  .add_row{
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: 50px;
+    height: 50px;
+    margin-left: -25px;
+    margin-bottom: -60px;
+    cursor: pointer;
+    border: 1px solid #dcdcdc;
+    border-radius: 25px;
+    color: #9d9d9d;
+    z-index:1;
+  }
+  .add_row:hover{
+    color: #9d9d9d;
+    background:#c9c9c9;
+  }
+
+  .add_row .glyphicon{
+    margin-left: 15.5px;
+    margin-top: 10px;
+    font-size: 22px;
+  }
+
+  .row-options{
+    float: right;
+    position: absolute;
+    right: 0;
+  }
+
+
+
+  .col_1{
+    width:25%;
+  }
+  .col_2{
+    width:50%;
+  }
+
+
+
+  .ouick_field{
+    float:left;
+  }
+
+  .ouick_field.position_left,  .ouick_field.position_right{
+    padding-top: 20px;
+  }
+
+  .ouick_field.position_left .caption{
+    float:left;
+    width:25%;
+  }
+  .ouick_field.position_left input{
+    float:right;
+    width:75%;
+  }
+  .ouick_field.position_top .field,.ouick_field.position_top .caption{
+    display:block;
+  }
+  
+  .ouick_field.position_right .caption{
+    float:right;
+  }
+  .ouick_field.position_bottom .field{
+    float:left;
+    clear:left;
+  }
+
+</style>
+
+ <div style="padding-left:130px;padding-right:200px;" id="createFormContainer">
+  <h1>Create Form</h1>
+  <p>{{fieldData}}</p>
+  <div>
+      <div>
+        <h3>Form Options</h3>
+
+                <div class="form-group">
+                  <label for="field" class="col-sm-2 control-label">Title</label>
+
+                  <div class="col-sm-10">
+                    <input type="text" ng-model="formData.title" class="form-control" placeholder="caption"/>
+                  </div>
+
+                  <label for="field" class="col-sm-2 control-label">Subtitle</label>
+                  <div class="col-sm-10">
+                    <input type="text" ng-model="formData.subtitle" class="form-control" placeholder="subtitle"/>
+                  </div>
+
+
+
+
+
+                  <h4 class="col-sm-6" ng-click="showAdvanced=!showAdvanced">Advanced</h4>
+                  <div ng-show="showAdvanced" class="clearfix">
+                    <label for="field" class="col-sm-2 control-label">Add ng-model</label>
+
+                    <div class="col-sm-10">
+                      <input type="checkbox" ng-model="formData.ngModel">
+                    </div>
+                  </div>
+                </div>
+
+      </div>
+  </div>
+
+  <div>
+      <h3 style="clear:both">Form</h3>
+      <form name="myForm" ng-submit="createField()" class="form_editor">
+        <div class="form_editor_row" ng-repeat="rowData in formData.rows">
+          <div class="form_editor_field" ng-repeat="fieldData in rowData.fields" ng-bind-html="parseField(fieldData,$parent.$index ,$index, true)" compile>
+          </div>
+
+          
+          <div class="btn-group row-options" uib-dropdown dropdown-append-to-body>
+            <button type="button" ng-click="removeRow($index)" class="btn btn-default"><span class="glyphicon glyphicon-trash"></span></button>
+            <button id="btn-append-to-body" type="button" class="btn btn-default" uib-dropdown-toggle>
+              <span class="glyphicon glyphicon-plus"></span>
+            </button>
+            <div class="dropdown-menu  " uib-dropdown-menu role="menu" aria-labelledby="btn-append-to-body" ng-click="$event.stopPropagation()">
+                <div class="form-group">
+                  <label for="field" class="col-sm-2 control-label">Field</label>
+
+                  <div class="col-sm-10">
+                    <select class="form-control" name="field" id="field" ng-model="addedField.field" ng-options="fieldData.id as fieldData.title for fieldData in getFieldTypes()" ng-change="addedField.caption = (tableData.fields|filter:{id:addedField.field})[0].title"></select>
+                  </div>
+
+
+                  <label for="caption" class="col-sm-2 control-label">Caption</label>
+                  <div class="col-sm-10">
+                      <input type="text" ng-model="addedField.caption" class="form-control" placeholder="caption"/>
+                  </div>
+
+                  <label for="caption" class="col-sm-7 control-label">Column Width</label>
+                  <div class="col-sm-5">
+                      <input type="number" step="1" max="4" ng-model="addedField.column_width" class="form-control" placeholder="1"/>
+                  </div>
+                  <div ng-show="addedField.field=='button'">
+                    
+
+                    <label for="caption" class="col-sm-7 control-label">Button Text</label>
+                    <div class="col-sm-5">
+                        <input type="text" ng-model="addedField.button_text" class="form-control" placeholder="Submit"/>
+                    </div>
+                    <label for="button_type" class="col-sm-7 control-label">Button Type</label>
+                    <div class="col-sm-5">
+                      <select name="button_type" class="form-control" ng-model="addedField.button_type">
+                        <option>submit</option>
+                        <option>back</option>
+                        <option>reset</option>
+                      </select>
+                    </div>
+
+
+                  </div>
+                  <div ng-show="addedField.field!='textfield'&&addedField.field!='button'">
+
+
+                    <label for="caption" class="col-sm-7 control-label">Caption Position</label>
+                    <div class="col-sm-5">
+                      <select name="caption_position" class="form-control" ng-model="addedField.caption_position">
+                        <option>no_caption</option>
+                        <option>left</option>
+                        <option>top</option>
+                        <option>right</option>
+                        <option>bottom</option>
+                      </select>
+                    </div>
+
+                    <label for="caption" class="col-sm-4 control-label">Info Text</label>
+                    <div class="col-sm-8">
+                      <input type="text" placeholder="caption" ng-model="addedField.info_text" class="form-control"/>
+                    </div>
+
+                  </div>
+
+                  
+
+                  <div class="col-sm-12">
+                    <a class="btn btn-primary" ng-click="addField($index, field_index)">Add Field</a>
+                  </div>
+                </div>
+
+                <div class="preview" ng-bind-html="parseField(addedField)">
+                  {{parseField(addedField)}}
+                </div>
+            </div>
+          </div>
+
+          <a class="add_row" ng-click="addRow($index)"><span class="glyphicon glyphicon-plus"></span></a>
+          </div>
+        <a class="btn" ng-click="addRow()" ng-if="rows == 1">Add Row</a>
+        <br/>
+        <p>{{formData}}</p>
+        <input type="submit" value="Save" ng-click="saveForm()" class="btn btn-success"/>
+      </form>
+  </div>
+</div>

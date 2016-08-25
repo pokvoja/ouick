@@ -77,6 +77,21 @@ class ouick_table{
       $result['id'] = $table['id'];
       $result['title'] = $table['title'];
       $result['fields'] = array();
+      $result['formulars'] = array();
+      
+      
+      //select forms for table
+      $forms = $db->shiftResult($db->select('forms',array('table_id',$table['id'])),'table_id');
+      foreach($forms AS $form){
+        /*$newField = array();
+        foreach($fieldData AS $index=>$value)
+          if(!is_numeric($index))
+            $newField[$index] = $value;*/
+
+        $result['formulars'][] = $form;
+      }
+      
+      
       //select fields for table
       $tempFields = $db->shiftResult($db->select('fields',array('table_id',$table['id'])),'table_id');
       foreach($tempFields AS $fieldData){
@@ -215,6 +230,27 @@ switch($_GET['action']){
 
     }
   break;
+  
+  
+  case'forms/create':
+      
+      $request = $_POST['formData'];
+      var_dump($request);
+      
+      $values = array();
+      $values['table_id'] = $request['table_id'];
+      $values['json'] = $request['json'];
+      $values['title'] = $request['title'];
+      $db = new db();
+      $form_id = $db->insert('forms', $values);
+      echo $form_id;
+      /*$_POST['title'];
+      $_POST['subtitle'];
+      $_POST['ngModel'];*/
+  break;
+  
+  
+  
   case'mysql/getDBInformation':
 
 

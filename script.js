@@ -23,6 +23,17 @@ app.directive('compileTemplate', function($compile, $parse){
         }         
     }
 });
+app.directive('compile',function($compile, $timeout){
+    return{
+        restrict:'A',
+        link: function(scope,elem,attrs){
+            $timeout(function(){                
+                $compile(elem.contents())(scope);    
+            });
+        }        
+    };
+});
+app.filter('unsafe', function($sce) { return $sce.trustAsHtml; });
 app.filter('toRange', function(){
   return function(input) {
     var lowBound, highBound;
@@ -54,6 +65,10 @@ app.config(function($routeProvider){
                 templateUrl: 'tableOverview.html',
     			controller: 'tableOverviewController'
           })
+          .when('/datasets/:datasetId/import',{
+                templateUrl: 'import.html',
+    			controller: 'importContoller'
+          })
           .when('/tables/:tableId',{
                 templateUrl: 'tableDetail.html',
     			controller: 'tableDetailController'
@@ -61,6 +76,14 @@ app.config(function($routeProvider){
           .when('/tables/:tableId/createField',{
                 templateUrl: 'createField.html',
     			controller: 'createFieldController'
+          })
+          .when('/tables/:tableId/createForm',{
+                templateUrl: 'createForm.html',
+    			controller: 'createFormController'
+          })
+          .when('/tables/:tableId/forms/:formId',{
+                templateUrl: 'createForm.html',
+    			controller: 'updateFormController'
           })
           .when('/about',{
                 templateUrl: 'about.html'
@@ -72,8 +95,7 @@ app.config(function($routeProvider){
 
 app.factory('typeFactory', function() {
   var types = 
-[{"id":"1","0":"1","title":"int","1":"int","syntax":"<input type=\"number\" name=\"%field_id%\" id=\"%field_id%\" value=\"%field_value%\" class=\"int\"  %ngm%>","2":"<input type=\"number\" name=\"%field_id%\" id=\"%field_id%\" value=\"%field_value%\" class=\"int\"  %ngm%>","info_text":"zB 1,2,3,4 usw.","3":"zB 1,2,3,4 usw."},{"id":"2","0":"2","title":"float","1":"float","syntax":"<input type=\"number\" name=\"%field_id%\" id=\"%field_id%\" value=\"%field_value%\" class=\"float\"  %ngm%>","2":"<input type=\"number\" name=\"%field_id%\" id=\"%field_id%\" value=\"%field_value%\" class=\"float\"  %ngm%>","info_text":"zb 7,5 oder 1,1415\r\n","3":"zb 7,5 oder 1,1415\r\n"},{"id":"3","0":"3","title":"text","1":"text","syntax":"<input type=\"text\" name=\"%field_id%\" id=\"%field_id%\" value=\"%field_value%\" class=\"text\" %ngm%>","2":"<input type=\"text\" name=\"%field_id%\" id=\"%field_id%\" value=\"%field_value%\" class=\"text\" %ngm%>","info_text":"","3":""},{"id":"4","0":"4","title":"id","1":"id","syntax":"","2":"","info_text":"","3":""},{"id":"5","0":"5","title":"date","1":"date","syntax":"","2":"","info_text":"","3":""},{"id":"6","0":"6","title":"file","1":"file","syntax":"","2":"","info_text":"","3":""},{"id":"7","0":"7","title":"image","1":"image","syntax":"","2":"","info_text":"jpgeg\/png\/gif","3":"jpgeg\/png\/gif"},{"id":"8","0":"8","title":"int","1":"int","syntax":"","2":"","info_text":"","3":""}];
-
+[{"id":"1","0":"1","title":"int","1":"int","syntax":"<input type=\"number\" name=\"%field_id%\" id=\"%field_id%\" value=\"%field_value%\" class=\"int\"  %ngm%>","2":"<input type=\"number\" name=\"%field_id%\" id=\"%field_id%\" value=\"%field_value%\" class=\"int\"  %ngm%>","info_text":"zB 1,2,3,4 usw.","3":"zB 1,2,3,4 usw."},{"id":"2","0":"2","title":"float","1":"float","syntax":"<input type=\"number\" name=\"%field_id%\" id=\"%field_id%\" value=\"%field_value%\" class=\"float\"  %ngm%>","2":"<input type=\"number\" name=\"%field_id%\" id=\"%field_id%\" value=\"%field_value%\" class=\"float\"  %ngm%>","info_text":"zb 7,5 oder 1,1415\r\n","3":"zb 7,5 oder 1,1415\r\n"},{"id":"3","0":"3","title":"text","1":"text","syntax":"<input type=\"text\" name=\"%field_id%\" id=\"%field_id%\" value=\"%field_value%\" class=\"text\" %ngm%>","2":"<input type=\"text\" name=\"%field_id%\" id=\"%field_id%\" value=\"%field_value%\" class=\"text\" %ngm%>","info_text":"","3":""},{"id":"4","0":"4","title":"id","1":"id","syntax":"<input type=\"number\" name=\"%field_id%\" id=\"%field_id%\" value=\"%next_auto_index%\" class=\"int\"  %ngm% disabled>","2":"<input type=\"number\" name=\"%field_id%\" id=\"%field_id%\" value=\"%next_auto_index%\" class=\"int\"  %ngm% disabled>","info_text":"","3":""},{"id":"5","0":"5","title":"date","1":"date","syntax":"","2":"","info_text":"","3":""},{"id":"6","0":"6","title":"file","1":"file","syntax":"","2":"","info_text":"","3":""},{"id":"7","0":"7","title":"image","1":"image","syntax":"","2":"","info_text":"jpgeg\/png\/gif","3":"jpgeg\/png\/gif"},{"id":"8","0":"8","title":"dropdown","1":"dropdown","syntax":"<select name=\"%field_id%\" id=\"%field_id%\" class=\"dropdown\"  %ngm%>%dropdown_values%<\/select>","2":"<select name=\"%field_id%\" id=\"%field_id%\" class=\"dropdown\"  %ngm%>%dropdown_values%<\/select>","info_text":"","3":""}];
   var factory = {
   	 all:function(){
   	 	return types;
@@ -87,6 +109,204 @@ app.factory('typeFactory', function() {
 		});
 		return result;
   	 }
+  };
+  return factory;
+});
+
+app.factory('tableDataFactory', function($http) {
+  var data = {};
+  var fieldValues = {};
+
+  var factory = {
+  	 init:function(cb){
+		$http.post('api.php?action=tables/get', {dataset_id:1}, {
+		        	headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'},
+		        	transformRequest: transform
+		}).then(function successCallback(response) {
+				    // this callback will be called asynchronously
+				    // when the response is available
+				    data.tables = response.data;
+				    if(typeof cb === 'function')
+				    	cb();
+				    //$location.path('tables/'+$scope.field.table_id);
+		}, function errorCallback(response) {
+				    // called asynchronously if an error occurs
+				    // or server returns response with an error status.
+		});
+  	 },
+  	 getTableData:function(id){
+	  	var result = {};
+		angular.forEach(data.tables, function(value, key) {
+			
+
+		  if(value.id == id){
+		  	result = value;
+		  }
+		});
+		return result;
+	 },
+	 fieldIdToFieldIndex:function(field_id, table_id){
+	  	var tabledata = this.getTableData(table_id);
+	  	var i = 1;
+	  	var result = field_id;
+
+	  	if(tabledata.fields)
+		angular.forEach(tabledata.fields, function(value, key) {
+		  if(value.id == field_id){
+		  	result = i;
+		  }
+		  i++;
+		});
+	  	return parseInt(result);
+
+	 },
+	 fieldIndexToFieldId:function(field_index, table_id){
+	  	var tabledata = this.getTableData(table_id);
+	  	var i = 1;
+	  	var result = field_index;
+
+	  	if(tabledata.fields)
+		angular.forEach(tabledata.fields, function(value, key) {
+		  if(i == field_index){
+		  	result = value.id;
+		  }
+		  i++;
+		});
+	  	return result;
+	 },
+	 rowExists:function(table_id,row_index){
+	  	var tableData = this.getTableData(table_id);
+	  	var result = false;
+		angular.forEach(tableData.field_values, function(value, key) {
+		  if(value.row == row_index){
+		  	result = true;
+		  }
+		});
+		return result;
+	 },
+	 getFieldValueArray:function(table_id, field_index, row, transformed_data){
+
+	  	var tableData = this.getTableData(table_id);
+	  	var field_id = this.fieldIndexToFieldId(field_index,table_id);
+	  	var fieldData = this.getFieldData(field_id, table_id);
+	  	var self = this;
+	  	var result = [];
+	  	console.log('type'+parseInt(fieldData.type));
+	  	console.log(transformed_data);
+	  	console.log('asasasda sd asd asd');
+
+	  	//linked tables
+	  	if(transformed_data == true && parseInt(fieldData.type) == 8){
+
+
+			angular.forEach(tableData.field_values, function(value, key) {
+			  if(value.field_id == field_id && value.row == row){
+			  	var fieldData = self.getFieldData(field_id, table_id);
+
+
+			  	if(typeof fieldData.additional == 'string')
+			  		fieldData.additional = JSON.parse(fieldData.additional);
+
+
+			  	var fieldValueArray = self.getFieldValueArray(table_id, field_index, row);
+
+			  	var newArray = [];
+				//loop through all values and replace them with "real value"
+				angular.forEach(fieldValueArray, function(value, index) {
+					//console.error(fieldData.additional);
+								//loop through all linked fields and add value to result
+								angular.forEach(fieldData.additional.dropdown_shown_values, function(nvalue) {
+									if(!isNaN(nvalue)&&!isNaN(value.value)&&nvalue.length>0){
+										var tempArray = self.getFieldValueArray(fieldData.additional.dropdown_table, self.fieldIdToFieldIndex(nvalue), value.value);
+							  			newArray.push({timestamp:value.timestamp, value:tempArray[0].value});
+									}
+								});
+
+
+				});
+				result = newArray;
+			  }
+			});
+
+	  	}else{
+	  		
+			angular.forEach(tableData.field_values, function(value, key) {
+			  if(value.field_id == field_id && value.row == row){
+			  	result.push(value);
+			  }
+			});
+	  	}
+
+
+
+		return result;
+	 },
+	 getTableOverview:function(){
+	 	var result = [];
+	 	angular.forEach(data.tables, function(value, key) {
+		  result.push({id:value.id,title:value.title});
+		});
+		return result;
+	 },
+	 getFieldData:function(field_id, table_id){
+	  	var tables = [];
+	  	if(table_id)
+	  		tables.push(this.getTableData(table_id));
+
+	  	var result;
+		angular.forEach(tables, function(value, key) {
+		  if(value.id == table_id){
+			angular.forEach(value['fields'], function(nvalue, nkey) {
+				if(nvalue.id == field_id)
+					result = nvalue;
+			});
+		  }
+		});
+		return result;
+	  },
+	 getNextAutoIndex:function(field_id, table_id){
+	  	var fieldData = this.getFieldData(field_id, table_id);
+	  	var tableData = this.getTableData(fieldData.table_id);
+	  	var result = 0;
+		angular.forEach(tableData.field_values, function(value, key) {
+		  if(value.field_id == field_id && parseInt(value.value)>result){
+		  	result = parseInt(value.value);
+		  }
+		});
+		return result+1;
+	 },
+  	 all:function(){
+  	 	return data;
+  	 },
+
+  	 removeRow:function(table_id, row){
+
+
+  	 	$http.post('api.php?action=rows/remove',{ 'table_id' : table_id, 'row_id': row }, {
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'},
+                        transformRequest: transform
+                }).then(function successCallback(response) {
+		    // this callback will be called asynchronously
+		    // when the response is available
+		    tableDataFactory.init();
+		    //$location.path('tables/'+$scope.field.table_id);
+		}, function errorCallback(response) {
+			console.log(table_id, row);
+
+		    // called asynchronously if an error occurs
+		    // or server returns response with an error status.
+		});
+  	 },
+         getFormData:function(row_id){
+            var tableData = this.getTableData(row_id);
+            var result;
+            angular.forEach(tableData.forms, function(value, key) {
+              if(value.field_id == row_id){
+                    result = value
+              }
+            });
+            return result;
+         }
   };
   return factory;
 });
@@ -148,7 +368,7 @@ app.controller('tableMenuController',function($scope){
       $scope.message="Hello world";
 
 });
-app.controller('tableController',function($scope,$compile, $sce, $http, typeFactory){
+app.controller('tableController',function($scope,$compile, $sce, $http, typeFactory, tableDataFactory){
 
 	  $scope.loadTables = function(){
 		$http.post('api.php?action=tables/get', {dataset_id:1}, {
@@ -171,7 +391,7 @@ app.controller('tableController',function($scope,$compile, $sce, $http, typeFact
 		    return $sce.trustAsHtml(html_code);
 	  };
 	  $scope.numberOfFields = function(table_id){
-	  	var tableData = $scope.getTableData(table_id);
+	  	var tableData = tableDataFactory.getTableData(table_id);
 	  	if(tableData.fields)
 	  	return tableData.fields.length+1;
 	  }
@@ -195,12 +415,52 @@ app.controller('tableController',function($scope,$compile, $sce, $http, typeFact
 		  }
 		});
 		return no_of_rows;
+	  };
+	  $scope.prepareDropdownArray = function(table_id, fields){
+	  };
+	  $scope.getDropdownOptions = function(field_id,table_id,value){
+	  	if(!value){
+	  		value = '';
+	  	}
+	  	options = '';
+	  	var fieldData = $scope.getFieldData(field_id,table_id);
+
+	  	if(fieldData.additional){
+	  		if(typeof fieldData.additional == 'string')
+	  			var dropdown_info = JSON.parse(fieldData.additional);
+	  		else
+	  			var dropdown_info = fieldData.additional;
+			console.log(dropdown_info);
+			var i = 0;
+			var options = '';
+			if(dropdown_info)
+			while(i < $scope.numberOfRows(dropdown_info.dropdown_table)){
+			
+				var text = '';
+				angular.forEach(dropdown_info.dropdown_shown_values, function(value, key) {
+					if(value != ''){
+						console.log(value);
+				  text += $scope.getFieldValue(dropdown_info.dropdown_table, tableDataFactory.fieldIdToFieldIndex(parseInt(value)), i+1);
+				  console.log(dropdown_info.dropdown_table, tableDataFactory.fieldIdToFieldIndex(parseInt(value)), i+1);
+					}
+				});
+				var selected = '';
+				if( i+1 == value)
+					selected = 'selected';
+
+				options += '<option value="'+( i+1)+'" '+selected+'>'+text+'</option>';
+				
+
+				i++;
+			}
+		}
+
+	  	return options;
 	  }
 	  $scope.generateFieldInput = function(field_index, table_id, value, options){
 	  	if(!value){
 	  		value = '';
 	  	}
-
 
 	  	var field_id = $scope.fieldIndexToFieldId(field_index, table_id);
 	  	var fieldData = $scope.getFieldData(field_id, table_id);
@@ -211,14 +471,32 @@ app.controller('tableController',function($scope,$compile, $sce, $http, typeFact
 
 	  	var ngm = 'ng-model="fields['+field_id+']"';
 
+
+
 	  	if(options&&options.field_class)
-	  		ngm = ngm+' class="'+options.field_class+'"';
+	  		ngm = ngm+' class="field '+options.field_class+'"';
 
 	  	var typeObject = typeFactory.getById(parseInt(fieldData.type));
+
+	  	console.log('typeobject:');
+	  	console.log(typeObject);
 	  	var syntax = typeObject.syntax;
 	  	syntax=syntax.replace('%field_id%', 'field_id');
 	  	syntax=syntax.replace('%field_value%', value);
+	  	if(syntax.indexOf('%next_auto_index%') > -1){
+	  		var next_index = tableDataFactory.getNextAutoIndex(field_id, table_id);
+
+	  		ngm += ' ng-init="fields['+field_id+']= '+next_index+'"';
+
+	  		syntax=syntax.replace('%next_auto_index%', next_index);
+	  	}
 	  	syntax=syntax.replace('%ngm%', ngm);
+	  	var dropdownValues = $scope.getDropdownOptions(field_id, table_id, value);
+	  	console.log('ddvalues');
+	  	console.log(dropdownValues);
+	  	console.log(field_id, table_id, value);
+	  	syntax=syntax.replace('%dropdown_values%', $scope.getDropdownOptions(field_id, table_id, value));
+
 	  	switch(parseInt(fieldData.type)){
 
 	  		default:
@@ -240,15 +518,17 @@ app.controller('tableController',function($scope,$compile, $sce, $http, typeFact
 	  $scope.fieldIndexToFieldId = function(field_index, table_id){
 	  	var tabledata = $scope.getTableData(table_id);
 	  	var i = 1;
-	  	var result = field_index;
+	  	var result;
 
 	  	if(tabledata.fields)
 		angular.forEach(tabledata.fields, function(value, key) {
-		  if(i === field_index){
+		  if(i == field_index){
 		  	result = value.id;
 		  }
 		  i++;
 		});
+
+
 	  	return result;
 	  }
 	  $scope.getFieldData = function(field_id, table_id){
@@ -270,8 +550,9 @@ app.controller('tableController',function($scope,$compile, $sce, $http, typeFact
 		return result;
 	  };
 	  $scope.updateField = function(table_id, field_index, row, cb){
-	  	var field_id = $scope.fieldIndexToFieldId(field_index);
-	  	var value = $('#field_'+table_id+'_'+field_index+'_'+row+' input').val();
+	  	var field_id = $scope.fieldIndexToFieldId(field_index,table_id);
+	  	var field_selector = '#field_'+table_id+'_'+field_index+'_'+row;
+	  	var value = $(field_selector+' input, '+field_selector+' select').val();
 
 			$http.post('api.php?action=updateField', {table_id:table_id,field_id:field_id, row:row, value:value}, {
 	        	headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'},
@@ -292,7 +573,7 @@ app.controller('tableController',function($scope,$compile, $sce, $http, typeFact
 	  $scope.removeRow = function(table_id, field_index, row, force){
 
 		if (confirm("Are you sure to delete this row?")) {
-		    
+		    tableDataFactory.removeRow(table_id, row);
 		} else {
 		   
 		}
@@ -327,32 +608,19 @@ app.controller('tableController',function($scope,$compile, $sce, $http, typeFact
 	  		});
 	  	}
 	  };
-	  $scope.getFieldValueArray = function(table_id, field_index, row){
-	  	var tableData = $scope.getTableData(table_id);
-	  	var field_id = $scope.fieldIndexToFieldId(field_index,table_id);
-	  	var result = [];
-		angular.forEach(tableData.field_values, function(value, key) {
-		  if(value.field_id == field_id && value.row == row){
-		  	result.push(value);
-		  }
-		});
-		return result;
-	  };
-	  $scope.getFieldValue = function(table_id, field_index, row){
-	  	var fieldValueArray = $scope.getFieldValueArray(table_id, field_index, row);
-	  	/*var tableData = $scope.getTableData(table_id);
-	  	var result = 1337;
-		angular.forEach(tableData.field_values, function(value, key) {
-		  if(value.field_id == field_index && value.row == row){
-		  	result = value.value;
-		  }
-		});*/
+	  tableDataFactory.init();
+	  $scope.getFieldValueArray = tableDataFactory.getFieldValueArray;
+	  $scope.rowExists = tableDataFactory.rowExists;
+	  //@param transformed_data 	if false -> values in dropdown are the row indexes of the dropdown table
+	  $scope.getFieldValue = function(table_id, field_index, row_index,transformed_data){
+	  	var fieldValueArray = tableDataFactory.getFieldValueArray(table_id, field_index, row_index,transformed_data);
+	  	
 		if(fieldValueArray[0])
 		return fieldValueArray[0].value;
 	  };
 	  $scope.generateHistoryButton = function(table_id, field_index, row){
 
-		var fieldValueArray = $scope.getFieldValueArray(table_id, field_index, row);
+		var fieldValueArray = tableDataFactory.getFieldValueArray(table_id, field_index, row,true);
 		if(fieldValueArray.length>1){
 	  	var html = '<div class="dropdown pull-right historyButton">';
 			html += '<button class="btn btn-primary btn-sm dropdown-toggle" type="button" data-toggle="dropdown">';
@@ -372,17 +640,7 @@ app.controller('tableController',function($scope,$compile, $sce, $http, typeFact
 	  	}
 	  	return '';
 	  };
-	  $scope.getTableData = function(id){
-	  	var result = {};
-		angular.forEach($scope.tables, function(value, key) {
-			
-
-		  if(value.id == id){
-		  	result = value;
-		  }
-		});
-		return result;
-	  };
+	  $scope.getTableData = tableDataFactory.getTableData;
       $scope.message="Hello mthrfckr";
 
 });	
@@ -395,6 +653,124 @@ app.controller('createDatasetController',function($scope, $controller, $route, $
 	
   	$scope.addDatasetFormOpen = false;
 });
+
+app.controller('formController',['$scope', '$controller', '$route', '$http','$location','tableDataFactory','$sce', function ($scope, $controller, $route, $http,$location,tableDataFactory,$sce){
+
+  	$controller('tableController', {$scope: $scope});
+  	$scope.tableId = $route.current.params.tableId;
+  	$scope.showAdvanced = false;
+	$scope.formData = {};
+	$scope.formData.rows = [];
+	$scope.getFormData = function(){
+		return $scope.formData;
+	};
+        $scope.saveForm = function(){
+                $http.post('api.php?action=forms/create', {'formData':{title:$scope.formData.title,json:angular.toJson($scope.formData),table_id:$scope.tableId}}, {
+                    headers:{ 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'},
+                    transformRequest: transform
+                }).then(function successCallback(response) {
+		    // this callback will be called asynchronously
+		    // when the response is available
+		    //$location.path('datasets/'+$scope.dataset_id);
+		}, function errorCallback(response) {
+		    // called asynchronously if an error occurs
+		    // or server returns response with an error status.
+		});
+        };
+	$scope.tableData = tableDataFactory.getTableData($scope.tableId);
+	if(typeof $scope.tableData.fields === 'undefined')
+		tableDataFactory.init(function(result){
+			$scope.tableData = result;
+		});
+
+	$scope.rows = 1;
+	$scope.addedField = {};
+	$scope.addedField.column_width = 1;
+	$scope.addRow = function(index){
+		if(typeof index !== 'undefined'){
+			console.log(index)
+			$scope.formData.rows.splice(index+1, 0, {id:$scope.rows,fields:[]});
+		}
+		else{
+			$scope.formData.rows.push({id:$scope.rows,fields:[]});
+			$scope.rows++;
+		}
+	};
+	var fieldTypesPushed = false;
+	$scope.getFieldTypes = function(){
+		var result = [];
+		result = $scope.tableData.fields;
+		if(!fieldTypesPushed){
+			result.push({id:'textfield',title:'textfield'});
+			result.push({id:'button',title:'button'});
+			fieldTypesPushed = true;
+		}
+		return result;
+	};
+	$scope.removeRow = function(row_index){
+		$scope.formData.rows.splice(row_index, 1);
+	};
+	$scope.colsInRow = function(row_index){
+		var cols = 0;
+		angular.forEach($scope.formData.rows[row_index].fields, function(value){
+			if(value.column_width)
+				cols = cols+parseInt(value.column_width);
+			else
+				cols++;
+		});
+		return cols;
+	}
+	$scope.parseField = function(fieldData, row_index, field_index, show_edit_button){
+		var optionsbutton="";
+		if(show_edit_button){
+			optionsbutton += "";
+			optionsbutton += "          <div class=\"btn-group field-options\" uib-dropdown>";
+			optionsbutton += "            <button type=\"button\" ng-click=\"removeField("+row_index+", "+field_index+")\" class=\"btn btn-default\"><span class=\"glyphicon glyphicon-trash\"><\/span><\/button>";
+			optionsbutton += "            <button id=\"btn-append-to-body\" type=\"button\" class=\"btn btn-default\" uib-dropdown-toggle>";
+			optionsbutton += "              <span class=\"glyphicon glyphicon-pencil\"><\/span>";
+			optionsbutton += "            <\/button>";
+			optionsbutton += "          <\/div>";
+
+		}
+
+		switch(fieldData.field){
+			default:
+				var fieldInput = $scope.generateFieldInput(tableDataFactory.fieldIdToFieldIndex(fieldData.field, $scope.tableId), $scope.tableId, '');
+			break;
+			case'button':
+				fieldInput = '<button>'+fieldData.button_text+'</button';
+			break;
+			case'textarea':
+				fieldInput = '<span>'+fieldData.field_caption+'</span>';
+			break;
+		}
+
+		var html = '<div class="ouick_field col_'+fieldData.column_width+' position_'+fieldData.caption_position+'">';
+
+			html += '<span class="caption">'+fieldData.caption+'</span>';
+			html += fieldInput+optionsbutton;
+			html += '</div>';
+		return $sce.trustAsHtml(html);
+	};
+	$scope.addField = function(row_index, field_index){
+		if($scope.colsInRow(row_index) < 4)
+			$scope.formData.rows[row_index].fields[$scope.formData.rows[row_index].fields.length] = angular.copy($scope.addedField);
+		else
+			alert('Already 4 columns');
+	}
+	$scope.removeField = function(row_index,field_index){
+		console.error('asdasd');
+		console.error(row_index, field_index);
+		var row = $scope.formData.rows[row_index];
+		console.error($scope.formData.rows[row_index]);
+		row.fields.splice(field_index, 1);
+		$scope.formData.rows[row_index] = row;
+	}
+
+}]);
+app.controller('createFormController',['$scope', '$controller', '$route', '$http','$location','tableDataFactory','$sce', function ($scope, $controller, $route, $http,$location,tableDataFactory,$sce){
+    $controller('formController', {$scope: $scope});
+}]);
 app.controller('createTableController',function($scope, $controller, $route, $http,$location){
 
   	$controller('tableOverviewController', {$scope: $scope});
@@ -417,13 +793,14 @@ app.controller('createTableController',function($scope, $controller, $route, $ht
   	};
 
 });
-app.controller('tableOverviewController',function($scope, $controller){
+app.controller('tableOverviewController',function($scope, $controller, $route){
 
+  	$scope.dataset_id = $route.current.params.datasetId;
 
   	$controller('tableController', {$scope: $scope});
 
 });
-app.controller('tableDetailController',function($scope, $controller, $route, $http,$timeout,DTOptionsBuilder){
+app.controller('tableDetailController',function($scope, $controller, $route, $location, $http,$timeout,DTOptionsBuilder, tableDataFactory){
    	
   	$controller('tableController', {$scope: $scope});
 
@@ -437,6 +814,9 @@ app.controller('tableDetailController',function($scope, $controller, $route, $ht
 
   	//$controller('tableDetailController', {$scope: $scope});
 	$scope.fields = {};
+    $scope.dtOptions = DTOptionsBuilder.newOptions()
+        .withPaginationType('full_numbers');
+
 	$scope.createRow =function (){
 
 		var request = {};
@@ -450,8 +830,9 @@ app.controller('tableDetailController',function($scope, $controller, $route, $ht
     	}).then(function successCallback(response) {
 		    // this callback will be called asynchronously
 		    // when the response is available
-		    $scope.loadTables();
-		    //$location.path('tables/'+$scope.field.table_id);
+		    tableDataFactory.init(function(){
+		    	//$scope.tableData = tableDataFactory.getTableData($scope.tableId);
+		    });
 		}, function errorCallback(response) {
 		    // called asynchronously if an error occurs
 		    // or server returns response with an error status.
@@ -461,10 +842,181 @@ app.controller('tableDetailController',function($scope, $controller, $route, $ht
 	};
 
 });
-app.controller('createFieldController',function($scope, $controller, $http, $route, $location){
+
+
+
+app.factory('importFactory', function($http) {
+  /*var data = {};
+  var fieldValues = {};*/
+  var tableData = {};
+  var factory = {
+  	 getDBInformation:function(host, port, dbname, dbuser, dbpassword, charset,cb){
+		$http.post('api.php?action=mysql/getDBInformation', {host:host, port:port, dbname:dbname, dbuser:dbuser, dbpassword:dbpassword, charset:charset}, {
+		        	headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'},
+		        	transformRequest: transform
+		}).then(function successCallback(response) {
+				    // this callback will be called asynchronously
+				    // when the response is available
+				    tableData = response.data;
+				    if(typeof cb === 'function')
+				    	cb(response.data);
+		}, function errorCallback(response) {
+				    // called asynchronously if an error occurs
+				    // or server returns response with an error status.
+		});
+  	 },
+  	 importTables:function(mysqlinfo, tableData, cb){
+		$http.post('api.php?action=mysql/importTables', {mysqlinfo:mysqlinfo, tableData:tableData}, {
+		        	headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'},
+		        	transformRequest: transform
+		}).then(function successCallback(response) {
+				    // this callback will be called asynchronously
+				    // when the response is available
+				    console.log(response);
+				    if(typeof cb === 'function'){
+				    	cb();
+				    }
+		}, function errorCallback(response) {
+				    // called asynchronously if an error occurs
+				    // or server returns response with an error status.
+		});
+
+  	 }
+  };
+  return factory;
+});
+app.controller('importContoller',function($scope, $controller, $http, $route, $location, importFactory, $sce){
+	$scope.step = 0;
+	$scope.mysqlData = {};
+	$scope.mysqlData.charset = 'utf8';
+	$scope.dbData = {tables:[]};
+	$scope.selectedtables = {};
+	$scope.tableSelection = {};
+	$scope.tableImportSelection = {};
+
+	$scope.dataset_id = $route.current.params.datasetId;
+	$scope.chooseType = function(type){
+		$scope.step = 1;
+	}
+
+	$scope.log = function(){
+		console.log($scope.selectedtables, $scope.tableSelection,$scope.tableImportSelection);
+	}
+
+	$scope.generateTypeSelect = function(type, extra, ngm){
+		var typetext = type.replace(/\(.*\)/,'');
+
+
+		var options = [];
+		switch(typetext){
+			case'int':
+			case'double':
+			case'tinyint':
+			case'smallint':
+			case'mediumint':
+			case'bigint':
+			case'float':
+			case'decimal':
+				if(extra == 'auto_increment'){
+					options.push('id');
+				}
+				options.push('int');
+				options.push('float');
+			break;
+			case'text':
+			case'varchar':
+			case'bit':
+			case'char':
+			case'tinytext':
+			case'mediumtext':
+			case'longtext':
+			case'binary':
+			case'varbinary':
+			case'tinyblow':
+			case'blob':
+			case'mediumblob':
+			case'longblog':
+			case'enum':
+			case'set':
+			case'data':
+			case'datetime':
+			case'time':
+			case'timestamp':
+			case'year':
+			options.push('text');
+			break;
+		}
+
+		var optionsHTML = '';
+		angular.forEach(options, function(value){
+			optionsHTML += '<option>'+value+'</option>';
+		})
+
+		var ngm = 'ng-model="'+ngm+'"';
+		var select = '<select '+ngm+'>'+optionsHTML+'</select>';
+
+
+		return $sce.trustAsHtml(select+'<input type="text" name="importtype" value="'+type+'">');
+	}
+
+	$scope.submitStepTwo = function(){
+
+		var result = {};
+
+		angular.forEach($scope.selectedtables, function(value, key) {
+		   result[key] = {fields:[],dataset_id:$scope.dataset_id};
+		});
+
+		angular.forEach($scope.tableImportSelection, function(value, table_name) {
+
+			result[table_name].import_data = value.import_data;
+			angular.forEach(value.import_types, function(field_type, field_name){
+				var temp = {};
+				temp[field_name] = field_type;
+				result[table_name].fields.push(temp);
+			});
+		   
+		});
+		//console.log(result);
+		$scope.log();
+		importFactory.importTables($scope.mysqlData, result,function(){
+
+		});
+		return result;
+	}
+
+	$scope.submitStepOne = function(){
+		importFactory.getDBInformation($scope.mysqlData.host, 
+										$scope.mysqlData.port, 
+										$scope.mysqlData.dbname, 
+										$scope.mysqlData.dbuser, 
+										$scope.mysqlData.dbpassword, 
+										$scope.mysqlData.charset,
+										function(response){
+											console.log(response);
+											if(response.tables.length > 0){
+												$scope.dbData = response;
+												$scope.step=2;
+											}
+
+										});
+	};
+
+});
+app.controller('createFieldController',function($scope, $controller, $http, $route, $location, typeFactory,tableDataFactory){
 	$scope.field = {};
+	tableDataFactory.init(function(){
+		$scope.tables = tableDataFactory.getTableOverview();
+	});
 	$scope.field.table_id = $route.current.params.tableId;
 	$scope.fieldTypes = typeFactory.all();
+	$scope.field.additional = {};
+	$scope.dropDownTableData = [];
+	$scope.updateDropDownTableData = function(){
+		console.log($scope.field.additional.dropdown_table);
+		$scope.table = tableDataFactory.getTableData($scope.field.additional.dropdown_table);
+		$scope.dropDownTableData.fields = $scope.table.fields;
+	}
 
 	$scope.createField = function(){
 
@@ -486,24 +1038,32 @@ app.controller('createFieldController',function($scope, $controller, $http, $rou
 	    var transform = function(data){
 	        return $.param(data);
 	    }
-function timeAgo(time){
-  var units = [
-    { name: "second", limit: 60, in_seconds: 1 },
-    { name: "minute", limit: 3600, in_seconds: 60 },
-    { name: "hour", limit: 86400, in_seconds: 3600  },
-    { name: "day", limit: 604800, in_seconds: 86400 },
-    { name: "week", limit: 2629743, in_seconds: 604800  },
-    { name: "month", limit: 31556926, in_seconds: 2629743 },
-    { name: "year", limit: null, in_seconds: 31556926 }
-  ];
-  var diff = (new Date() - new Date(time*1000)) / 1000;
-  if (diff < 5) return "now";
-  
-  var i = 0, unit;
-  while (unit = units[i++]) {
-    if (diff < unit.limit || !unit.limit){
-      var diff =  Math.floor(diff / unit.in_seconds);
-      return diff + " " + unit.name + (diff>1 ? "s" : "");
-    }
-  };
-}
+		function timeAgo(time){
+		  var units = [
+		    { name: "second", limit: 60, in_seconds: 1 },
+		    { name: "minute", limit: 3600, in_seconds: 60 },
+		    { name: "hour", limit: 86400, in_seconds: 3600  },
+		    { name: "day", limit: 604800, in_seconds: 86400 },
+		    { name: "week", limit: 2629743, in_seconds: 604800  },
+		    { name: "month", limit: 31556926, in_seconds: 2629743 },
+		    { name: "year", limit: null, in_seconds: 31556926 }
+		  ];
+		  var diff = (new Date() - new Date(time*1000)) / 1000;
+		  if (diff < 5) return "now";
+		  
+		  var i = 0, unit;
+		  while (unit = units[i++]) {
+		    if (diff < unit.limit || !unit.limit){
+		      var diff =  Math.floor(diff / unit.in_seconds);
+		      return diff + " " + unit.name + (diff>1 ? "s" : "");
+		    }
+		  };
+		}
+
+function removeField(row_index,field_index){
+	var scope = angular.element(document.getElementById('ngView')).scope();
+	scope.$apply(function(){
+		scope.removeField(row_index,field_index);
+	});
+	alert('wouhuhuhuh');
+};

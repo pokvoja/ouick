@@ -1,0 +1,320 @@
+ <div style="padding-left:130px;padding-right:200px;">
+
+
+<style>
+.bs-wizard {margin-top: 40px;}
+
+/*Form Wizard*/
+.bs-wizard {border-bottom: solid 1px #e0e0e0; padding: 0 0 10px 0;}
+.bs-wizard > .bs-wizard-step {padding: 0; position: relative;}
+.bs-wizard > .bs-wizard-step + .bs-wizard-step {}
+.bs-wizard > .bs-wizard-step .bs-wizard-stepnum {color: #595959; font-size: 16px; margin-bottom: 5px;}
+.bs-wizard > .bs-wizard-step .bs-wizard-info {color: #999; font-size: 14px;}
+.bs-wizard > .bs-wizard-step > .bs-wizard-dot {position: absolute; width: 30px; height: 30px; display: block; background: #fbe8aa; top: 45px; left: 50%; margin-top: -15px; margin-left: -15px; border-radius: 50%;} 
+.bs-wizard > .bs-wizard-step > .bs-wizard-dot:after {content: ' '; width: 14px; height: 14px; background: #fbbd19; border-radius: 50px; position: absolute; top: 8px; left: 8px; } 
+.bs-wizard > .bs-wizard-step > .progress {position: relative; border-radius: 0px; height: 8px; box-shadow: none; margin: 20px 0;}
+.bs-wizard > .bs-wizard-step > .progress > .progress-bar {width:0px; box-shadow: none; background: #fbe8aa;}
+.bs-wizard > .bs-wizard-step.complete > .progress > .progress-bar {width:100%;}
+.bs-wizard > .bs-wizard-step.active > .progress > .progress-bar {width:50%;}
+.bs-wizard > .bs-wizard-step:first-child.active > .progress > .progress-bar {width:0%;}
+.bs-wizard > .bs-wizard-step:last-child.active > .progress > .progress-bar {width: 100%;}
+.bs-wizard > .bs-wizard-step.disabled > .bs-wizard-dot {background-color: #ddd;}
+.bs-wizard > .bs-wizard-step.disabled > .bs-wizard-dot:after {opacity: 0;}
+.bs-wizard > .bs-wizard-step:first-child  > .progress {left: 50%; width: 50%;}
+.bs-wizard > .bs-wizard-step:last-child  > .progress {width: 50%;}
+.bs-wizard > .bs-wizard-step.disabled a.bs-wizard-dot{ pointer-events: none; }
+/*END Form Wizard*/
+
+.bs-wizard > .bs-wizard-step {
+  margin-top:50px;margin-bottom: 50px;
+}
+
+
+
+
+.form-signin
+{
+    max-width: 330px;
+    padding: 15px;
+    margin: 0 auto;
+    padding-top: 5px;
+}
+.account-wall
+{
+    margin-top: 20px;
+    padding: 20px 25px 30px;
+    background-color: #f7f7f7;
+    -moz-box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.3);
+    -webkit-box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.3);
+    box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.3);
+}
+.logo
+{
+    margin: 25px auto 20px;
+    float: none;
+    display: block;
+    height: 38px;
+    width: 116px;
+}
+
+.title
+{
+    font-size: 20px;
+    color: #262626;
+    margin: 0 0 15px;
+    font-weight: normal;
+}
+
+.accountchooser ol
+{
+    width: 100%;
+    margin: 0;
+    list-style: none;
+    padding: 0;
+}
+
+.accountchooser ol li
+{
+    height: 76px;
+    border-top: 1px solid #d5d5d5;
+}
+
+
+.accountchooser ol li button
+{
+    padding: 15px 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+    outline: none;
+    border: 0;
+    cursor: pointer;
+    text-align: left;
+    background: url(//ssl.gstatic.com/accounts/ui/arrow_right_1x.png) right center no-repeat;
+    background-size: 21px 21px;
+}
+
+.accountchooser ol li button img
+{
+    float: left;
+    -moz-border-radius: 50%;
+    -webkit-border-radius: 50%;
+    border-radius: 50%;
+    height: 46px;
+    width: 46px;
+}
+
+.accountchooser ol li button span.account-name
+{
+    font-weight: bold;
+    font-size: 16px;
+    padding-top: 3px;
+    margin-top: -55px;
+    color: #427fed;
+}
+
+.accountchooser ol li button span
+{
+    margin-top:0;
+    display: block;
+    margin-left: 165px;
+    padding-right: 20px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.action
+{
+    padding: 5px;
+}
+.action ul
+{
+    width: 100%;
+    margin: 0;
+    list-style: none;
+    padding: 0;
+}
+.action ul li:first-child
+{
+    border-right: 1px solid #d5d5d5;
+}
+
+.action ul li
+{
+    width: 49%;
+    display: inline-block;
+}
+
+.action ul li a
+{
+    color: #427fed;
+    cursor: pointer;
+    text-decoration: none;
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+    width: 100%;
+    display: inline-block;
+    background: none;
+    text-align: center;
+    padding: 12px 0;
+    outline: none;
+    text-decoration: none;
+    border: 0;
+}
+.progress{
+  background-color:#ddd;
+}
+</style>
+      <div class="row" ng-show="step == 0">
+        <div class="col-sm-10 col-sm-offset-1">
+            <div class="account-wall accountchooser">
+                <h1 class="title">
+                    Choose Import Type</h1>
+                <ol class="accounts">
+                    <li>
+                        <button type="submit" name="Email" value="example@gmail.com" ng-click="chooseType()">
+                            <h2>MySQL</h2>
+                            <span class="account-name">Import DB Structure</span> <span class="account-email">From Remote Server
+                            </span>
+                        </button>
+                    </li>
+                    <li>
+                        <button type="submit" name="Email" value="example1@gmail.com">
+                            <h2>Worksheet</h2>
+                            <span class="account-name">Import Worksheet</span> <span class="account-email">Import XLS or CSV Files
+                            </span>
+                        </button>
+                    </li>
+                </ol>
+            </div>
+        </div>
+    </div>
+    <div class="row" ng-show="step == 0">
+        <div class="col-sm-10 col-sm-offset-1">
+            <div class="account-wall accountchooser action">
+                <ul>
+                    <li><a>Continue</a></li>
+                    <li><a href="http://www.jquery2dotnet.com">Cancel</a></li></ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="row" ng-show="step > 0">
+      <div id="importFromTable" class="account-wall">
+
+              <h1 class="title">Import</h1>
+          
+              <div class="bs-wizard" style="border-bottom:0;">
+                  
+                  <div class="col-xs-3 bs-wizard-step complete" ng-class="{complete: step>1, active: step == 1}">
+                    <div class="text-center bs-wizard-stepnum">Step 1</div>
+                    <div class="progress"><div class="progress-bar"></div></div>
+                    <a href="#" class="bs-wizard-dot" id='dot1'></a>
+                    <div class="bs-wizard-info text-center">Server Data</div>
+                  </div>
+                  
+                  <div class="col-xs-3 bs-wizard-step" ng-class="{complete: step>2, active: step == 2, disabled: step<2}"><!-- complete -->
+                    <div class="text-center bs-wizard-stepnum">Step 2</div>
+                    <div class="progress"><div class="progress-bar"></div></div>
+                    <a href="#" class="bs-wizard-dot"></a>
+                    <div class="bs-wizard-info text-center">Choose Tables &amp; Fields</div>
+                  </div>
+                  
+                  <div class="col-xs-3 bs-wizard-step" ng-class="{complete: step>3, active: step == 3, disabled: step<3}"><!-- complete -->
+                    <div class="text-center bs-wizard-stepnum">Step 3</div>
+                    <div class="progress"><div class="progress-bar"></div></div>
+                    <a href="#" class="bs-wizard-dot"></a>
+                    <div class="bs-wizard-info text-center">Import</div>
+                  </div>
+                  
+                  <div class="col-xs-3 bs-wizard-step" ng-class="{complete: step>4, active: step == 4, disabled: step<4}"><!-- active -->
+                    <div class="text-center bs-wizard-stepnum">Step 4</div>
+                    <div class="progress"><div class="progress-bar"></div></div>
+                    <a href="#" class="bs-wizard-dot"></a>
+                    <div class="bs-wizard-info text-center">Finish</div>
+                  </div>
+              </div>
+
+              <div style="clear:left"></div>
+              <form ng-show="step==1" ng-submit="submitStepOne()">
+                <h2>Server Data</h2>
+                <div class="form-group">
+                  <label for="mysqlServer">mysql Host</label>
+                  <input type="text" class="form-control" name="mysqlHost" id="mysqlHost" ng-model="mysqlData.host" placeholder="mysql.youserver.com">
+                </div>
+                <div class="form-group">
+                  <label for="mysqlPort">mysql Port</label>
+                  <input type="text" class="form-control" name="mysqlPort" id="mysqlPort" ng-model="mysqlData.port" placeholder="3306">
+                </div>
+                <div class="form-group">
+                  <label for="mysqlDB">mysql Database</label>
+                  <input type="text" class="form-control" name="mysqlDB" id="mysqlDB" ng-model="mysqlData.dbname" placeholder="Database Name">
+                </div>
+                <div class="form-group">
+                  <label for="mysqlCharset">mysql Charset</label>
+                  <input type="text" class="form-control" name="mysqlCharset" id="mysqlCharset" ng-model="mysqlData.charset" placeholder="Charset">
+                </div>
+                <div class="form-group">
+                  <label for="mysqlUser">mysql User</label>
+                  <input type="text" class="form-control" name="mysqlUser" id="mysqlUser" ng-model="mysqlData.dbuser" placeholder="Database User">
+                </div>
+                <div class="form-group">
+                  <label for="mysqlPassword">mysql Password</label>
+                  <input type="text" class="form-control" ng-model="mysqlData.dbpassword" id="mysqlDB" placeholder="Email">
+                </div>
+                <button type="submit" class="btn btn-default">Submit</button>
+              </form>
+              <form ng-show="step==2" ng-submit="submitStepTwo()">
+                <h2>Import Tables</h2>
+                <div class="list-group">
+                      <div ng-repeat="n in dbData.tables">
+                      <a class="list-group-item">
+                        <span>{{n.title}}</span>
+                        <span class="pull-right">
+
+
+                        <!--<input type="checkbox" name="tables[]" ng-model="selectedtables[n.title]" ng-click="updateSelection(n.title)">-->
+                        <button type="button" class="btn btn-default btn-sm" ng-model="selectedtables[n.title]" uib-btn-checkbox="" btn-checkbox-true="1" btn-checkbox-false="0" style="">
+                          Import
+                        </button>
+
+                        </span>
+                      </a>
+
+                      <div class="sublinks" ng-show="selectedtables[n.title]">
+                        <a class="list-group-item small">
+
+                            {{n.count}} Rows
+                            <button type="button" class="btn btn-default btn-sm" ng-model="tableImportSelection[n.title]['import_data']" uib-btn-checkbox="" btn-checkbox-true="1" btn-checkbox-false="0" style="" ng-click="log()">
+                              Import Data
+                            </button>
+                        </a>
+                        <a class="list-group-item small" ng-repeat="column in n.columns"><!--<span class="glyphicon glyphicon-chevron-right"></span>-->
+
+                        <span>
+                          
+
+                            <button type="button" class="btn btn-default btn-sm" ng-model="tableImportSelection[n.title]['import_fields'][column.title]" uib-btn-checkbox="" btn-checkbox-true="1" btn-checkbox-false="0" style="" ng-click="log()">
+                              Import Field
+                            </button>
+                        </span>
+                        <span>{{column.title}}</span>
+                        <span compile ng-bind-html="generateTypeSelect(column.type,column.Extra,
+                        'tableImportSelection[n.title][\'import_types\'][column.title]')">{{generateTypeSelect(column.type,column.Extra )}}</span>
+                        <span>{{tableImportSelection[n.title]['import_types'][column.title]}}</span>
+                        <span>{{column.Extra}}</span>
+                        <span>{{generateTypeInput}}</span>
+                        </a>
+                      </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-default">Import</button>
+              </form>
+      </div>
+
+    </div>
+
+
+</div>

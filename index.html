@@ -142,7 +142,7 @@
         <li ng-controller="tableMenuController"><a href="#/about">Tables</a></li>
         <li><a href="#/about"></a></li>
         <li class="dropdown">
-                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="true"><span></span><br>Hi {{currentUser.name}}</a>
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="true">Hi {{currentUser.name}}</a>
                         <ul class="dropdown-menu" role="menu">
                             <li>
                                 <a href="https://app.sea-watch.org/admin/public/auth/logout"><i class="fa fa-sign-out"></i> Logout</a>
@@ -154,7 +154,7 @@
 </div>
   <br/>
  
-  <div ng-view class="jumbotron"></div>
+  <div ng-view id="ngView" class="jumbotron"></div>
   </div>
 </body>
 </html>

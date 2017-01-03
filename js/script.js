@@ -417,13 +417,8 @@ app.controller('tableController',function($scope,$compile, $sce, $http, typeFact
 	  };
 	  $scope.prepareDropdownArray = function(table_id, fields){
 	  };
-	  $scope.getDropdownOptions = function(field_id,table_id,value){
-	  	if(!value){
-	  		value = '';
-	  	}
-	  	options = '';
-	  	var fieldData = $scope.getFieldData(field_id,table_id);
-
+	  $scope.generateDropdownOptions = function(fieldObj){
+	  	var options = '',fieldData = fieldObj;
 	  	if(fieldData.additional){
 
 	  		if(typeof fieldData.additional == 'string')
@@ -445,7 +440,7 @@ app.controller('tableController',function($scope,$compile, $sce, $http, typeFact
 					}
 				});
 				var selected = '';
-				if( i+1 == value)
+				if(typeof dropdown_info.default_value !== 'undefined'&&i+1 == dropdown_info.default_value)
 					selected = 'selected';
 
 				options += '<option value="'+( i+1)+'" '+selected+'>'+text+'</option>';
@@ -454,8 +449,17 @@ app.controller('tableController',function($scope,$compile, $sce, $http, typeFact
 				i++;
 			}
 		}
+		return options
+	  }
+	  $scope.getDropdownOptions = function(field_id,table_id,value){
+	  	if(!value){
+	  		value = '';
+	  	}
+	  	
 
-	  	return options;
+	 
+
+	  	return this.generateDropdownOptions(this.getFieldData(field_id,table_id));
 	  }
 	  $scope.generateFieldInput = function(field_index, table_id, value, options){
 	  	if(!value){

@@ -1,10 +1,42 @@
- <div style="padding-left:130px;padding-right:200px;">
+ <div class="formcontainer">
   <h1>Add Field To Table</h1>
   <div>
   <style>
-    label{clear:both;
-        display: block;
-        margin:50px 0;}
+    .item-input{
+      width: 100%;
+      height: 75px;
+      margin: 0;
+    }
+
+    .input-label{
+        width:20%;
+        margin-bottom:10px;
+        float:left;
+        font-weight:200;
+    }
+
+    .item-input select, .item-input input, .item-input button:first-of-type{
+        float:left;
+        clear:left;
+    }
+    .item-input select{
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        background-position: right 50%;
+        background-repeat: no-repeat;
+        background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA4AAAAMCAYAAABSgIzaAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAyJpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuMC1jMDYwIDYxLjEzNDc3NywgMjAxMC8wMi8xMi0xNzozMjowMCAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RSZWY9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZVJlZiMiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENTNSBNYWNpbnRvc2giIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6NDZFNDEwNjlGNzFEMTFFMkJEQ0VDRTM1N0RCMzMyMkIiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6NDZFNDEwNkFGNzFEMTFFMkJEQ0VDRTM1N0RCMzMyMkIiPiA8eG1wTU06RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDo0NkU0MTA2N0Y3MUQxMUUyQkRDRUNFMzU3REIzMzIyQiIgc3RSZWY6ZG9jdW1lbnRJRD0ieG1wLmRpZDo0NkU0MTA2OEY3MUQxMUUyQkRDRUNFMzU3REIzMzIyQiIvPiA8L3JkZjpEZXNjcmlwdGlvbj4gPC9yZGY6UkRGPiA8L3g6eG1wbWV0YT4gPD94cGFja2V0IGVuZD0iciI/PuGsgwQAAAA5SURBVHjaYvz//z8DOYCJgUxAf42MQIzTk0D/M+KzkRGPoQSdykiKJrBGpOhgJFYTWNEIiEeAAAMAzNENEOH+do8AAAAASUVORK5CYII=);
+        padding: .5em;
+        padding-right: 1.5em
+    }
+    .item-input select, .item-input input{
+        width: 50%;
+        border-radius: 0;
+        background: #FFF;
+        height: 35px;
+        padding: 5px;
+        border: 1px solid #dcdcdc;
+    }
+
   </style>
       <form name="myForm" ng-controller="createFieldController" ng-submit="createField()" class="my-form">
         <label class="item item-input item-floating-label">
@@ -16,21 +48,31 @@
                 <input type="text" placeholder="title" id="title" ng-model="field.title">
         </label>
         <label class="item item-input item-floating-label">
-                <span class="input-label">Default Value{{field.type}}</span>
+                <span class="input-label">Default Value</span>
                 <input type="text" id="default_value" ng-model="field.default_value">
         </label>
         <label class="item item-input item-floating-label" ng-if="field.type === '8'">
-                <span class="input-label">Dropdown Table</span>{{dropDownTableData}}
+                <span class="input-label">Dropdown Table</span>
                 <select name="table" ng-model="field.additional.dropdown_table" ng-change="updateDropDownTableData(); field.additional.dropdown_shown_values = [];" ng-options="tablDD.id as tablDD.title for tablDD in tables"></select>
         </label>
         <label class="item item-input item-floating-label" ng-if="field.type === '8'">
-                <span class="input-label">Shown value(s)</span>
-                <button ng-repeat="fieldData in dropDownTableData.fields" type="button" class="btn btn-default btn-sm" uib-btn-checkbox="" ng-model="field.additional.dropdown_shown_values[$index]" btn-checkbox-true="fieldData.id" style="" ng-click="log()">
+                <span class="input-label">Index (This value is stored)</span>
+                <button ng-repeat="fieldData in dropDownTableData.fields" type="button" class="btn btn-default btn-sm pull-left" uib-btn-checkbox="" ng-model="field.additional.dropdown_index[$index]" btn-checkbox-true="fieldData.id" style="" ng-click="log()">
                             {{fieldData.title}}
                  </button>
-                 {{field}}
         </label>
-        <button type="submit" class="button button-full button-positive" value="Create Case">Create Case</button>
+        <label class="item item-input item-floating-label" ng-if="field.type === '8'">
+                <span class="input-label">Shown value(s)  (These values are shown)</span>
+                <button ng-repeat="fieldData in dropDownTableData.fields" type="button" class="btn btn-default btn-sm pull-left" uib-btn-checkbox="" ng-model="field.additional.dropdown_shown_values[$index]" btn-checkbox-true="fieldData.id" style="" ng-click="log()">
+                            {{fieldData.title}}
+                 </button>
+        </label>
+        <label class="item item-input item-floating-label">
+
+                 {{field}}
+                 {{generateDropdownOptions(field)}}
+                <button type="submit" class="btn btn-success" value="Create Case">Add Field</button>
+        </label>
     </form>
   </div>
 </div>

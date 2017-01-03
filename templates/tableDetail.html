@@ -5,8 +5,28 @@
     min-width:1em;
     border:1px dotted #c9c9c9;
   }
+
+  .dataTables_wrapper{
+    max-width: 100%;
+    clear: left;
+    overflow: auto;
+  }
+
+  .dataTables_wrapper table{
+    margin-top:50px;
+  }
+
+  .dataTables_length{
+    position: absolute;
+    left: 400px;
+  }
+  .dataTables_filter{
+    position: absolute;
+  }
 </style>
-    <div>
+
+    <!--forms pannel-->
+    <div style="width:30%; float:left">
       <div class="panel panel-default">
             <div class="panel-heading">
               <h4 class="panel-title">
@@ -24,7 +44,9 @@
             </div>
       </div>
     </div>
-    <div>
+
+    <!--views pannel-->
+    <div style="width:30%; float:left; margin-left:3%; clear:right;">
       <div class="panel panel-default">
             <div class="panel-heading">
               <h4 class="panel-title">
@@ -35,13 +57,23 @@
             <div id="collapseTwo" class="panel-collapse collapse">
               <ul class="list-group">
                 <li class="list-group-item"><span class="glyphicon glyphicon-pencil text-primary"></span><a href="http://fb.com/moinakbarali">Articles</a></li>
+              </ul>
+            </div>
+      </div>
+    </div>
 
-                <li class="list-group-item"><span class="glyphicon glyphicon-flash text-success"></span><a href="http://fb.com/moinakbarali">News</a></li>
-
-                <li class="list-group-item"><span class="glyphicon glyphicon-file text-info"></span><a href="http://fb.com/moinakbarali">Newsletters</a></li>
-
-                <li class="list-group-item"> <span class="glyphicon glyphicon-comment text-success"></span><a href="http://fb.com/moinakbarali">Comments</a><span class="badge">42</span></li>
-
+    <!--settings pannel-->
+    <div style="width:30%; float:left; margin-left:3%; clear:right;">
+      <div class="panel panel-default">
+            <div class="panel-heading">
+              <h4 class="panel-title">
+                <a data-toggle="collapse" data-parent="#accordion" data-target="#collapseThre"><span class="glyphicon glyphicon-cog">
+                  </span>Settings</a>
+              </h4>
+            </div>
+            <div id="collapseThre" class="panel-collapse collapse">
+              <ul class="list-group">
+                <li class="list-group-item"><span class="fa fa-trash-o"></span><a href="#/tables/{{tableData.id}}/delete">Delete</a></li>
               </ul>
             </div>
       </div>

@@ -58,31 +58,35 @@ app.config(function($routeProvider){
 
       $routeProvider
           .when('/',{
-                templateUrl: 'home.html',
+                templateUrl: 'templates/home.html',
                 controller: 'datasetOverviewController'
           })
           .when('/datasets/:datasetId/',{
-                templateUrl: 'tableOverview.html',
+                templateUrl: 'templates/tableOverview.html',
     			controller: 'tableOverviewController'
           })
           .when('/datasets/:datasetId/import',{
-                templateUrl: 'import.html',
+                templateUrl: 'templates/import.html',
     			controller: 'importContoller'
           })
           .when('/tables/:tableId',{
-                templateUrl: 'tableDetail.html',
+                templateUrl: 'templates/tableDetail.html',
     			controller: 'tableDetailController'
           })
+          .when('/tables/:tableId/delete',{
+                templateUrl: 'templates/deleteTable.html',
+    			controller: 'deleteTableController'
+          })
           .when('/tables/:tableId/createField',{
-                templateUrl: 'createField.html',
+                templateUrl: 'templates/createField.html',
     			controller: 'createFieldController'
           })
           .when('/tables/:tableId/createForm',{
-                templateUrl: 'createForm.html',
+                templateUrl: 'templates/createForm.html',
     			controller: 'createFormController'
           })
           .when('/tables/:tableId/forms/:formId',{
-                templateUrl: 'createForm.html',
+                templateUrl: 'templates/createForm.html',
     			controller: 'updateFormController'
           })
           .when('/about',{
@@ -191,9 +195,6 @@ app.factory('tableDataFactory', function($http) {
 	  	var fieldData = this.getFieldData(field_id, table_id);
 	  	var self = this;
 	  	var result = [];
-	  	console.log('type'+parseInt(fieldData.type));
-	  	console.log(transformed_data);
-	  	console.log('asasasda sd asd asd');
 
 	  	//linked tables
 	  	if(transformed_data == true && parseInt(fieldData.type) == 8){
@@ -291,7 +292,6 @@ app.factory('tableDataFactory', function($http) {
 		    tableDataFactory.init();
 		    //$location.path('tables/'+$scope.field.table_id);
 		}, function errorCallback(response) {
-			console.log(table_id, row);
 
 		    // called asynchronously if an error occurs
 		    // or server returns response with an error status.
@@ -353,9 +353,6 @@ app.factory('datasetFactory', function() {
   return factory;
 });
 
-
-
-
 app.controller('cfgController',function($scope, $controller,datasetFactory,userFactory){
 	$controller('tableController',{$scope:$scope});
 	$scope.datasets = datasetFactory.all();
@@ -363,11 +360,13 @@ app.controller('cfgController',function($scope, $controller,datasetFactory,userF
     $scope.currentUser = userFactory.getById(userFactory.currentUserId());
 
 });
+
 app.controller('tableMenuController',function($scope){
 
       $scope.message="Hello world";
 
 });
+
 app.controller('tableController',function($scope,$compile, $sce, $http, typeFactory, tableDataFactory){
 
 	  $scope.loadTables = function(){
@@ -426,11 +425,12 @@ app.controller('tableController',function($scope,$compile, $sce, $http, typeFact
 	  	var fieldData = $scope.getFieldData(field_id,table_id);
 
 	  	if(fieldData.additional){
+
 	  		if(typeof fieldData.additional == 'string')
 	  			var dropdown_info = JSON.parse(fieldData.additional);
 	  		else
 	  			var dropdown_info = fieldData.additional;
-			console.log(dropdown_info);
+
 			var i = 0;
 			var options = '';
 			if(dropdown_info)
@@ -439,9 +439,9 @@ app.controller('tableController',function($scope,$compile, $sce, $http, typeFact
 				var text = '';
 				angular.forEach(dropdown_info.dropdown_shown_values, function(value, key) {
 					if(value != ''){
-						console.log(value);
-				  text += $scope.getFieldValue(dropdown_info.dropdown_table, tableDataFactory.fieldIdToFieldIndex(parseInt(value)), i+1);
-				  console.log(dropdown_info.dropdown_table, tableDataFactory.fieldIdToFieldIndex(parseInt(value)), i+1);
+				  		text += $scope.getFieldValue(dropdown_info.dropdown_table,
+				  									tableDataFactory.fieldIdToFieldIndex(parseInt(value)),
+				  									i+1);
 					}
 				});
 				var selected = '';
@@ -478,11 +478,10 @@ app.controller('tableController',function($scope,$compile, $sce, $http, typeFact
 
 	  	var typeObject = typeFactory.getById(parseInt(fieldData.type));
 
-	  	console.log('typeobject:');
-	  	console.log(typeObject);
 	  	var syntax = typeObject.syntax;
 	  	syntax=syntax.replace('%field_id%', 'field_id');
 	  	syntax=syntax.replace('%field_value%', value);
+
 	  	if(syntax.indexOf('%next_auto_index%') > -1){
 	  		var next_index = tableDataFactory.getNextAutoIndex(field_id, table_id);
 
@@ -490,11 +489,11 @@ app.controller('tableController',function($scope,$compile, $sce, $http, typeFact
 
 	  		syntax=syntax.replace('%next_auto_index%', next_index);
 	  	}
+
 	  	syntax=syntax.replace('%ngm%', ngm);
 	  	var dropdownValues = $scope.getDropdownOptions(field_id, table_id, value);
-	  	console.log('ddvalues');
-	  	console.log(dropdownValues);
-	  	console.log(field_id, table_id, value);
+
+
 	  	syntax=syntax.replace('%dropdown_values%', $scope.getDropdownOptions(field_id, table_id, value));
 
 	  	switch(parseInt(fieldData.type)){
@@ -515,6 +514,7 @@ app.controller('tableController',function($scope,$compile, $sce, $http, typeFact
 	  	}
 	  	return syntax;
 	  }
+
 	  $scope.fieldIndexToFieldId = function(field_index, table_id){
 	  	var tabledata = $scope.getTableData(table_id);
 	  	var i = 1;
@@ -688,8 +688,9 @@ app.controller('formController',['$scope', '$controller', '$route', '$http','$lo
 	$scope.addedField.column_width = 1;
 	$scope.addRow = function(index){
 		if(typeof index !== 'undefined'){
-			console.log(index)
+
 			$scope.formData.rows.splice(index+1, 0, {id:$scope.rows,fields:[]});
+
 		}
 		else{
 			$scope.formData.rows.push({id:$scope.rows,fields:[]});
@@ -872,7 +873,6 @@ app.factory('importFactory', function($http) {
 		}).then(function successCallback(response) {
 				    // this callback will be called asynchronously
 				    // when the response is available
-				    console.log(response);
 				    if(typeof cb === 'function'){
 				    	cb();
 				    }
@@ -977,8 +977,9 @@ app.controller('importContoller',function($scope, $controller, $http, $route, $l
 			});
 		   
 		});
-		//console.log(result);
+
 		$scope.log();
+
 		importFactory.importTables($scope.mysqlData, result,function(){
 
 		});
@@ -1034,6 +1035,26 @@ app.controller('createFieldController',function($scope, $controller, $http, $rou
 	};
 });
 
+
+app.controller('deleteTableController',function($scope, $controller, $http, $route, $location, typeFactory,tableDataFactory){
+	$scope.table_id = $route.current.params.tableId;
+	$scope.tabledata = tableDataFactory.getTableData($scope.table_id);
+
+	$scope.deleteTable = function(){
+
+		$http.post('api.php?action=deleteTable', {id:$scope.table_id}, {
+        	headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'},
+        	transformRequest: transform
+    	}).then(function successCallback(response) {
+		    // this callback will be called asynchronously
+		    // when the response is available
+		    //$location.path('tables/'+$scope.field.table_id);
+		}, function errorCallback(response) {
+		    // called asynchronously if an error occurs
+		    // or server returns response with an error status.
+		});
+	};
+});
 
 	    var transform = function(data){
 	        return $.param(data);

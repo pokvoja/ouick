@@ -17,8 +17,19 @@ class ouick_table{
     $this->table_id = $db->insert('tables', $values);
 
   }
-  public static function remove(){
+  public function remove(){
+    $db = new db();
+    $fields = $db->shiftResult($db->select('fields',array('table_id',$this->table_id)),'id');
+    foreach($fields AS $field){
+      $field_ids[] = $field['id'];
+    }
 
+
+    $query = 'DELETE FROM `fields` WHERE id IN ('.join(',',$field_ids).');';
+    $query .= 'DELETE FROM `field_values` WHERE field_id IN ('.join(',',$field_ids).');';
+    $query .=  "DELETE FROM `tables` WHERE id='".$this->table_id."'";
+
+    return $db->query($query);
   }
   public function getFieldIdArray(){
 
@@ -193,6 +204,11 @@ switch($_GET['action']){
     $ouick_field->row = $_POST['row'];
     $ouick_field->value = $_POST['value'];
     echo $ouick_field->update();
+
+  break;
+  case'tables/delete':
+    $ouick_table = new ouick_table($_POST['table_id']);
+    echo $ouick_table->remove();
 
   break;
   case'createRow':

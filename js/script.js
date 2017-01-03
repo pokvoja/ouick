@@ -370,6 +370,7 @@ app.controller('tableMenuController',function($scope){
 app.controller('tableController',function($scope,$compile, $sce, $http, typeFactory, tableDataFactory){
 
 	  $scope.loadTables = function(){
+	  	console.log('loading tables...');
 		$http.post('api.php?action=tables/get', {dataset_id:1}, {
         	headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'},
         	transformRequest: transform
@@ -377,12 +378,16 @@ app.controller('tableController',function($scope,$compile, $sce, $http, typeFact
 		    // this callback will be called asynchronously
 		    // when the response is available
 		    $scope.tables = response.data;
+
+	  		console.log($scope.tables);
+	  		console.log('... done');
 		    //$location.path('tables/'+$scope.field.table_id);
 		}, function errorCallback(response) {
 		    // called asynchronously if an error occurs
 		    // or server returns response with an error status.
 		});
 	  };
+
 	  $scope.loadTables();
 
 	  $scope.renderHtml = function(html_code)
@@ -428,26 +433,38 @@ app.controller('tableController',function($scope,$compile, $sce, $http, typeFact
 
 			var i = 0;
 			var options = '';
+
+			//loop trough table rows
 			if(dropdown_info)
-			while(i < $scope.numberOfRows(dropdown_info.dropdown_table)){
-			
-				var text = '';
-				angular.forEach(dropdown_info.dropdown_shown_values, function(value, key) {
-					if(value != ''){
-				  		text += $scope.getFieldValue(dropdown_info.dropdown_table,
-				  									tableDataFactory.fieldIdToFieldIndex(parseInt(value)),
-				  									i+1);
-					}
-				});
-				var selected = '';
-				if(typeof dropdown_info.default_value !== 'undefined'&&i+1 == dropdown_info.default_value)
-					selected = 'selected';
-
-				options += '<option value="'+( i+1)+'" '+selected+'>'+text+'</option>';
+				while(i < $scope.numberOfRows(dropdown_info.dropdown_table)){
 				
+					var text = '', index = '';
 
-				i++;
-			}
+					//get values for option value
+					angular.forEach(dropdown_info.dropdown_shown_values, function(value, key) {
+						if(value != ''){
+					  		text += $scope.getFieldValue(dropdown_info.dropdown_table,
+					  									tableDataFactory.fieldIdToFieldIndex(parseInt(value),dropdown_info.dropdown_table),
+					  									i+1);
+						}
+					});
+
+					//get value for index
+					index = $scope.getFieldValue(dropdown_info.dropdown_table,
+					  									tableDataFactory.fieldIdToFieldIndex(parseInt(dropdown_info.dropdown_index),dropdown_info.dropdown_table),
+					  									i+1);
+
+
+					var selected = '';
+					if(typeof dropdown_info.default_value !== 'undefined'&&i+1 == dropdown_info.default_value)
+						selected = 'selected';
+
+					if(index!='undefined'&&text!='undefined'&&index.length>0&&text.length>0)
+						options += '<option value="'+index+'" '+selected+'>'+text+'</option>';
+					
+
+					i++;
+				}
 		}
 		return options
 	  }
@@ -1045,14 +1062,15 @@ app.controller('deleteTableController',function($scope, $controller, $http, $rou
 	$scope.tabledata = tableDataFactory.getTableData($scope.table_id);
 
 	$scope.deleteTable = function(){
-
-		$http.post('api.php?action=deleteTable', {id:$scope.table_id}, {
+		alert('ayayay');
+		$http.post('api.php?action=tables/delete', {table_id:$scope.table_id}, {
         	headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'},
         	transformRequest: transform
     	}).then(function successCallback(response) {
 		    // this callback will be called asynchronously
 		    // when the response is available
-		    //$location.path('tables/'+$scope.field.table_id);
+
+		    $location.path('/');
 		}, function errorCallback(response) {
 		    // called asynchronously if an error occurs
 		    // or server returns response with an error status.

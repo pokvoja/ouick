@@ -1,4 +1,5 @@
 var app=angular.module('single-page-app',['ngRoute', 'ui.bootstrap','datatables'])
+var dataset;
 
 function RerenderDefaultRendererCtrl(DTOptionsBuilder, DTColumnDefBuilder) {
     var vm = this;
@@ -99,7 +100,7 @@ app.config(function($routeProvider){
 
 app.factory('typeFactory', function() {
   var types = 
-[{"id":"1","0":"1","title":"int","1":"int","syntax":"<input type=\"number\" name=\"%field_id%\" id=\"%field_id%\" value=\"%field_value%\" class=\"int\"  %ngm%>","2":"<input type=\"number\" name=\"%field_id%\" id=\"%field_id%\" value=\"%field_value%\" class=\"int\"  %ngm%>","info_text":"zB 1,2,3,4 usw.","3":"zB 1,2,3,4 usw."},{"id":"2","0":"2","title":"float","1":"float","syntax":"<input type=\"number\" name=\"%field_id%\" id=\"%field_id%\" value=\"%field_value%\" class=\"float\"  %ngm%>","2":"<input type=\"number\" name=\"%field_id%\" id=\"%field_id%\" value=\"%field_value%\" class=\"float\"  %ngm%>","info_text":"zb 7,5 oder 1,1415\r\n","3":"zb 7,5 oder 1,1415\r\n"},{"id":"3","0":"3","title":"text","1":"text","syntax":"<input type=\"text\" name=\"%field_id%\" id=\"%field_id%\" value=\"%field_value%\" class=\"text\" %ngm%>","2":"<input type=\"text\" name=\"%field_id%\" id=\"%field_id%\" value=\"%field_value%\" class=\"text\" %ngm%>","info_text":"","3":""},{"id":"4","0":"4","title":"id","1":"id","syntax":"<input type=\"number\" name=\"%field_id%\" id=\"%field_id%\" value=\"%next_auto_index%\" class=\"int\"  %ngm% disabled>","2":"<input type=\"number\" name=\"%field_id%\" id=\"%field_id%\" value=\"%next_auto_index%\" class=\"int\"  %ngm% disabled>","info_text":"","3":""},{"id":"5","0":"5","title":"date","1":"date","syntax":"","2":"","info_text":"","3":""},{"id":"6","0":"6","title":"file","1":"file","syntax":"","2":"","info_text":"","3":""},{"id":"7","0":"7","title":"image","1":"image","syntax":"","2":"","info_text":"jpgeg\/png\/gif","3":"jpgeg\/png\/gif"},{"id":"8","0":"8","title":"dropdown","1":"dropdown","syntax":"<select name=\"%field_id%\" id=\"%field_id%\" class=\"dropdown\"  %ngm%>%dropdown_values%<\/select>","2":"<select name=\"%field_id%\" id=\"%field_id%\" class=\"dropdown\"  %ngm%>%dropdown_values%<\/select>","info_text":"","3":""}];
+[{"id":"1","0":"1","title":"int","1":"int","syntax":"<input type=\"number\" name=\"%field_id%\" id=\"%field_id%\" value=\"%field_value%\" class=\"int\"  %ngm%>","2":"<input type=\"number\" name=\"%field_id%\" id=\"%field_id%\" value=\"%field_value%\" class=\"int\"  %ngm%>","info_text":"zB 1,2,3,4 usw.","3":"zB 1,2,3,4 usw."},{"id":"2","0":"2","title":"float","1":"float","syntax":"<input type=\"number\" name=\"%field_id%\" id=\"%field_id%\" value=\"%field_value%\" class=\"float\"  %ngm%>","2":"<input type=\"number\" name=\"%field_id%\" id=\"%field_id%\" value=\"%field_value%\" class=\"float\"  %ngm%>","info_text":"zb 7,5 oder 1,1415\r\n","3":"zb 7,5 oder 1,1415\r\n"},{"id":"3","0":"3","title":"text","1":"text","syntax":"<input type=\"text\" name=\"%field_id%\" id=\"%field_id%\" value=\"%field_value%\" class=\"text\" %ngm%>","2":"<input type=\"text\" name=\"%field_id%\" id=\"%field_id%\" value=\"%field_value%\" class=\"text\" %ngm%>","info_text":"","3":""},{"id":"4","0":"4","title":"id","1":"id","syntax":"<input type=\"number\" name=\"%field_id%\" id=\"%field_id%\" value=\"%next_auto_index%\" class=\"int\"  %ngm% disabled>","2":"<input type=\"number\" name=\"%field_id%\" id=\"%field_id%\" value=\"%next_auto_index%\" class=\"int\"  %ngm% disabled>","info_text":"","3":""},{"id":"5","0":"5","title":"date","1":"date","syntax":'<input type="datetime-local" name=\"%field_id%\" id=\"%field_id%\" value=\"%field_value%\" class=\"datetime\" %ngm%>',"2":"","info_text":"","3":""},{"id":"6","0":"6","title":"file","1":"file","syntax":"","2":"","info_text":"","3":""},{"id":"7","0":"7","title":"image","1":"image","syntax":"","2":"","info_text":"jpgeg\/png\/gif","3":"jpgeg\/png\/gif"},{"id":"8","0":"8","title":"dropdown","1":"dropdown","syntax":"<select name=\"%field_id%\" id=\"%field_id%\" class=\"dropdown\"  %ngm%>%dropdown_values%<\/select>","2":"<select name=\"%field_id%\" id=\"%field_id%\" class=\"dropdown\"  %ngm%>%dropdown_values%<\/select>","info_text":"","3":""}];
   var factory = {
   	 all:function(){
   	 	return types;
@@ -123,7 +124,7 @@ app.factory('tableDataFactory', function($http) {
 
   var factory = {
   	 init:function(cb){
-		$http.post('api.php?action=tables/get', {dataset_id:1}, {
+		$http.post('api.php?action=tables/get', {dataset_id:dataset}, {
 		        	headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'},
 		        	transformRequest: transform
 		}).then(function successCallback(response) {
@@ -333,10 +334,27 @@ app.factory('userFactory', function() {
   };
   return factory;
 });
-app.factory('datasetFactory', function() {
+app.factory('datasetFactory', function($http) {
   var datasets = [{id:1, title:'sw-volunteers'}
   ]
   var factory = {
+
+  	 init:function(cb){
+		$http.post('api.php?action=datasets/get', {dataset_id:1}, {
+		        	headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'},
+		        	transformRequest: transform
+		}).then(function successCallback(response) {
+				    // this callback will be called asynchronously
+				    // when the response is available
+				    datasets = response.data;
+				    if(typeof cb === 'function')
+				    	cb(datasets);
+				    //$location.path('tables/'+$scope.field.table_id);
+		}, function errorCallback(response) {
+				    // called asynchronously if an error occurs
+				    // or server returns response with an error status.
+		});
+  	 },
   	 all:function(){
   	 	return datasets;
   	 },
@@ -667,12 +685,32 @@ app.controller('tableController',function($scope,$compile, $sce, $http, typeFact
 });	
 app.controller('datasetOverviewController',function($scope, $controller, datasetFactory){
 
-	$scope.datasets = datasetFactory.all();
+	$scope.datasets = {};
+	if(typeof $scope.datasets.fields === 'undefined')
+		datasetFactory.init(function(result){
+			$scope.datasets = datasetFactory.all();
+		});
+
 
 });
 app.controller('createDatasetController',function($scope, $controller, $route, $http,$location){
 	
   	$scope.addDatasetFormOpen = false;
+  	$scope.dataset = {};
+  	$scope.createDataset = function(){
+  		$http.post('api.php?action=datasets/create', $scope.dataset, {
+        	headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'},
+        	transformRequest: transform
+    	}).then(function successCallback(response) {
+		    // this callback will be called asynchronously
+		    // when the response is available
+		    alert('dataset created');
+		    $location.path('/');
+		}, function errorCallback(response) {
+		    // called asynchronously if an error occurs
+		    // or server returns response with an error status.
+		});
+  	};
 });
 
 app.controller('formController',['$scope', '$controller', '$route', '$http','$location','tableDataFactory','$sce', function ($scope, $controller, $route, $http,$location,tableDataFactory,$sce){
@@ -795,8 +833,10 @@ app.controller('createFormController',['$scope', '$controller', '$route', '$http
 }]);
 app.controller('createTableController',function($scope, $controller, $route, $http,$location){
 
-  	$controller('tableOverviewController', {$scope: $scope});
   	$scope.dataset_id = $route.current.params.datasetId;
+  	dataset = $scope.dataset_id;
+
+  	$controller('tableOverviewController', {$scope: $scope});
   	$scope.table = {};
   	$scope.table.dataset_id = $scope.dataset_id;
   	$scope.addTableFormOpen = false;
@@ -818,7 +858,7 @@ app.controller('createTableController',function($scope, $controller, $route, $ht
 app.controller('tableOverviewController',function($scope, $controller, $route){
 
   	$scope.dataset_id = $route.current.params.datasetId;
-
+  	dataset = $scope.dataset_id;
   	$controller('tableController', {$scope: $scope});
 
 });

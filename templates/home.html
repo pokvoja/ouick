@@ -12,11 +12,8 @@
         </div>
       </form>
     </div>
-
-
-
-  <a class="btn btn-primary pull-right" style="margin-top:-40px" ng-click="addDatasetFormOpen = !addDatasetFormOpen" role="button" ng-show="!addTableFormOpen">Add Dataset</a>
     <div class="list-group">
+        <span>{{datasets}}</span>
         <a href="#/datasets/{{n.id}}/" class="list-group-item" ng-repeat="n in datasets track by $index">
           <span>{{n.title}}</span>
           <span class="glyphicon glyphicon-chevron-right pull-right"></span>

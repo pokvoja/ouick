@@ -61,6 +61,7 @@
     <thead>
       <th ng-repeat="field in tableData.fields track by $index">
         {{field.title}}
+        <label><a href="#/tables/{{tableId}}/removeField/{{field.id}}"><i class="fa fa-trash-o"></i></a></label>
       </th>
       <th>
         <a href="#/tables/{{tableId}}/createField/">Add Column</a>

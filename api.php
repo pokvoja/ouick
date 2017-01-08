@@ -56,9 +56,9 @@ switch($_GET['action']){
     $ouick_table = new ouick_table($_POST['table_id']);
     $ouick_table->deleteRow($_POST['row_id']);
   break;
-  case'getFieldTypes':
+  case'fieldtypes/get':
     $db = new db();
-    echo json_encode($db->shiftResult($db->query('SELECT * FROM `field_types`'),'id'));
+    echo json_encode($db->shiftResult($db->query("SELECT * FROM `field_types` WHERE active='1' ORDER BY order_id ASC"),'id'));
 
   break;
   case 'insertTestFields':
@@ -180,14 +180,4 @@ switch($_GET['action']){
     $db = new db();
     echo json_encode($db->shiftResult($db->query('SELECT * FROM datasets'),'id'));
   break;
-}
-
-function generateRandomString($length = 10) {
-    $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-    $charactersLength = strlen($characters);
-    $randomString = '';
-    for ($i = 0; $i < $length; $i++) {
-        $randomString .= $characters[rand(0, $charactersLength - 1)];
-    }
-    return $randomString;
-}
+}?>

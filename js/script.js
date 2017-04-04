@@ -1,3 +1,5 @@
+//import { FileSelectDirective, FileDropDirective, FileUploader } from 'ng2-file-upload/ng2-file-upload';
+
 var app=angular.module('single-page-app',['ngRoute', 'ui.bootstrap','datatables'])
 var dataset;
 
@@ -82,6 +84,10 @@ app.config(function($routeProvider){
                 templateUrl: 'templates/createField.html',
     			controller: 'createFieldController'
           })
+          .when('/tables/:tableId/deleteField',{
+                templateUrl: 'templates/deleteField.html',
+    			controller: 'deleteFieldController'
+          })
           .when('/tables/:tableId/createForm',{
                 templateUrl: 'templates/createForm.html',
     			controller: 'createFormController'
@@ -99,9 +105,7 @@ app.config(function($routeProvider){
 
 
 app.factory('typeFactory', function() {
-  	var types = 
-[{"id":"4","0":"4","title":"id","1":"id","syntax":"<input type=\"number\" name=\"%field_id%\" id=\"%field_id%\" value=\"%next_auto_index%\" class=\"int\"  %ngm% disabled>","2":"<input type=\"number\" name=\"%field_id%\" id=\"%field_id%\" value=\"%next_auto_index%\" class=\"int\"  %ngm% disabled>","info_text":"","3":"","order_id":"0","4":"0","active":"1","5":"1"},{"id":"1","0":"1","title":"int","1":"int","syntax":"<input type=\"number\" name=\"%field_id%\" id=\"%field_id%\" value=\"%field_value%\" class=\"int\"  %ngm%>","2":"<input type=\"number\" name=\"%field_id%\" id=\"%field_id%\" value=\"%field_value%\" class=\"int\"  %ngm%>","info_text":"zB 1,2,3,4 usw.","3":"zB 1,2,3,4 usw.","order_id":"1","4":"1","active":"1","5":"1"},{"id":"2","0":"2","title":"float","1":"float","syntax":"<input type=\"number\" name=\"%field_id%\" id=\"%field_id%\" value=\"%field_value%\" class=\"float\"  %ngm%>","2":"<input type=\"number\" name=\"%field_id%\" id=\"%field_id%\" value=\"%field_value%\" class=\"float\"  %ngm%>","info_text":"zb 7,5 oder 1,1415\r\n","3":"zb 7,5 oder 1,1415\r\n","order_id":"2","4":"2","active":"1","5":"1"},{"id":"3","0":"3","title":"text","1":"text","syntax":"<input type=\"text\" name=\"%field_id%\" id=\"%field_id%\" value=\"%field_value%\" class=\"text\" %ngm%>","2":"<input type=\"text\" name=\"%field_id%\" id=\"%field_id%\" value=\"%field_value%\" class=\"text\" %ngm%>","info_text":"","3":"","order_id":"3","4":"3","active":"1","5":"1"},{"id":"5","0":"5","title":"date","1":"date","syntax":"<input type=\"datetime-local\" name=\"%field_id%\" id=\"%field_id%\" value=\"%field_value%\" class=\"datetime\" %ngm%>","2":"<input type=\"datetime-local\" name=\"%field_id%\" id=\"%field_id%\" value=\"%field_value%\" class=\"datetime\" %ngm%>","info_text":"","3":"","order_id":"5","4":"5","active":"1","5":"1"},{"id":"8","0":"8","title":"dropdown","1":"dropdown","syntax":"<select name=\"%field_id%\" id=\"%field_id%\" %ngm%>%dropdown_values%<\/select>","2":"<select name=\"%field_id%\" id=\"%field_id%\" %ngm%>%dropdown_values%<\/select>","info_text":"","3":"","order_id":"8","4":"8","active":"1","5":"1"}];
-
+  	var types = field_types; //var is defined in header of index.php (quick and dirty solution until type_factory can be defined)
 	var factory = {
   	 all:function(){
   	 	return types;
@@ -221,7 +225,10 @@ app.factory('tableDataFactory', function($http) {
 								angular.forEach(fieldData.additional.dropdown_shown_values, function(nvalue) {
 									if(!isNaN(nvalue)&&!isNaN(value.value)&&nvalue.length>0){
 										var tempArray = self.getFieldValueArray(fieldData.additional.dropdown_table, self.fieldIdToFieldIndex(nvalue), value.value);
-							  			newArray.push({timestamp:value.timestamp, value:tempArray[0].value});
+							  			
+										if(tempArray.length > 0){
+							  				newArray.push({timestamp:value.timestamp, value:tempArray[0].value});
+										}
 									}
 								});
 
@@ -284,14 +291,14 @@ app.factory('tableDataFactory', function($http) {
 
   	 removeRow:function(table_id, row){
 
-
+  	 	var self = this;
   	 	$http.post('api.php?action=rows/remove',{ 'table_id' : table_id, 'row_id': row }, {
                         headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'},
                         transformRequest: transform
-                }).then(function successCallback(response) {
+        }).then(function successCallback(response) {
 		    // this callback will be called asynchronously
 		    // when the response is available
-		    tableDataFactory.init();
+		    self.init();
 		    //$location.path('tables/'+$scope.field.table_id);
 		}, function errorCallback(response) {
 
@@ -880,6 +887,9 @@ app.controller('tableDetailController',function($scope, $controller, $route, $lo
     $scope.dtOptions = DTOptionsBuilder.newOptions()
         .withPaginationType('full_numbers');
 
+    $scope.changeFile = function ($event){
+    	alert('change file triggered');
+    }
 	$scope.createRow =function (){
 
 		var request = {};
@@ -1119,6 +1129,27 @@ app.controller('deleteTableController',function($scope, $controller, $http, $rou
 	};
 });
 
+app.controller('deleteFieldController',function($scope, $controller, $http, $route, $location, typeFactory,tableDataFactory){
+	$scope.table_id = $route.current.params.tableId;
+	$scope.tabledata = tableDataFactory.getTableData($scope.table_id);
+
+	$scope.deleteField = function(){
+
+		$http.post('api.php?action=tables/delete', {table_id:$scope.table_id}, {
+        	headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'},
+        	transformRequest: transform
+    	}).then(function successCallback(response) {
+		    // this callback will be called asynchronously
+		    // when the response is available
+
+		    $location.path('/');
+		}, function errorCallback(response) {
+		    // called asynchronously if an error occurs
+		    // or server returns response with an error status.
+		});
+	};
+});
+
 	    var transform = function(data){
 	        return $.param(data);
 	    }
@@ -1149,5 +1180,4 @@ function removeField(row_index,field_index){
 	scope.$apply(function(){
 		scope.removeField(row_index,field_index);
 	});
-	alert('wouhuhuhuh');
 };

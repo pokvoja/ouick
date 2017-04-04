@@ -13,7 +13,15 @@
   <link rel="stylesheet" href="./bower_components/angular-datatables/dist/css/angular-datatables.css">
 
   <script src="js/inc/ui-bootstrap-custom-tpls-1.3.3.js"></script>
- 
+  <script>
+<?php
+//quick and dirty solution until factory is build
+include('inc/class_db.php');
+$db = new db();
+echo 'var field_types = '. json_encode($db->shiftResult($db->query("SELECT * FROM `field_types` WHERE active='1' ORDER BY order_id ASC"),'id'));
+
+ ?>
+  </script>
   <script src="js/script.js"></script>
 
 

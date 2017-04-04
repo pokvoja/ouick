@@ -7,6 +7,13 @@ include('inc/ouick_classes.php');
 
 
 switch($_GET['action']){
+  /*TABLES*/
+
+  case'tables/delete':
+    $ouick_table = new ouick_table($_POST['table_id']);
+    echo $ouick_table->remove();
+
+  break;
   case'tables/get':
 
     $ouick_table = new ouick_table();
@@ -21,6 +28,7 @@ switch($_GET['action']){
     $ouick_table->save();
     echo $ouick_table->table_id;
   break;
+
   case'createField':
 
     $ouick_field = new ouick_field();
@@ -40,11 +48,6 @@ switch($_GET['action']){
     echo $ouick_field->update();
 
   break;
-  case'tables/delete':
-    $ouick_table = new ouick_table($_POST['table_id']);
-    echo $ouick_table->remove();
-
-  break;
   case'createRow':
 
     $ouick_table = new ouick_table($_POST['table_id']);
@@ -56,32 +59,15 @@ switch($_GET['action']){
     $ouick_table = new ouick_table($_POST['table_id']);
     $ouick_table->deleteRow($_POST['row_id']);
   break;
+
+  /*FIELDTYPES*/
   case'fieldtypes/get':
     $db = new db();
     echo json_encode($db->shiftResult($db->query("SELECT * FROM `field_types` WHERE active='1' ORDER BY order_id ASC"),'id'));
 
   break;
-  case 'insertTestFields':
-    $i = 8;
-    $db = new db();
-    while($i < 10000){
-
-      $values = array();
-      $values['field_id'] = ($i%8)+1;
-      $values['row'] = round($i/8);
-      $values['value'] = generateRandomString(50);
-      if($i%8 == 0){
-        $values['value'] = round($i/8);
-      }
-      $values['timestamp'] = time();
-      $db->insert('field_values', $values);
-      $i++;
-      echo $i;
-
-    }
-  break;
   
-  
+  /*FORMS*/
   case'forms/create':
       
       $request = $_POST['formData'];
@@ -100,7 +86,7 @@ switch($_GET['action']){
   break;
   
   
-  
+  /*IMPORT RELATED STUFF*/
   case'mysql/getDBInformation':
     $db = new db();
     $db->updateConnection($_POST['host'], $_POST['port'], $_POST['dbname'], $_POST['dbuser'], $_POST['dbpassword'], 'utf8');
@@ -170,8 +156,9 @@ switch($_GET['action']){
 
       }
     }
-
   break;
+
+  /*DATASETS*/
   case 'datasets/create':
     $db = new db();
     $db->insert('datasets',array('title'=>$_POST['title']));
@@ -179,5 +166,28 @@ switch($_GET['action']){
   case 'datasets/get':
     $db = new db();
     echo json_encode($db->shiftResult($db->query('SELECT * FROM datasets'),'id'));
+  break;
+
+
+  /*TEST STUFF*/
+
+  case 'insertTestFields':
+    $i = 8;
+    $db = new db();
+    while($i < 10000){
+
+      $values = array();
+      $values['field_id'] = ($i%8)+1;
+      $values['row'] = round($i/8);
+      $values['value'] = generateRandomString(50);
+      if($i%8 == 0){
+        $values['value'] = round($i/8);
+      }
+      $values['timestamp'] = time();
+      $db->insert('field_values', $values);
+      $i++;
+      echo $i;
+
+    }
   break;
 }?>

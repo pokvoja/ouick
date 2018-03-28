@@ -1,23 +1,10 @@
--- phpMyAdmin SQL Dump
--- version 4.5.2
--- http://www.phpmyadmin.net
---
--- Host: localhost
--- Erstellungszeit: 03. Jan 2017 um 14:28
--- Server-Version: 10.1.9-MariaDB
--- PHP-Version: 5.6.15
-
-SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
-SET time_zone = "+00:00";
-
-
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Datenbank: `ouick_new`
+-- Datenbank: `ouick_two`
 --
 
 -- --------------------------------------------------------
@@ -56,22 +43,24 @@ CREATE TABLE `field_types` (
   `id` int(11) NOT NULL,
   `title` varchar(255) COLLATE utf8_bin NOT NULL,
   `syntax` text COLLATE utf8_bin NOT NULL,
-  `info_text` text COLLATE utf8_bin NOT NULL
+  `info_text` text COLLATE utf8_bin NOT NULL,
+  `order_id` int(11) NOT NULL,
+  `active` tinyint(1) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
 --
 -- Daten für Tabelle `field_types`
 --
 
-INSERT INTO `field_types` (`id`, `title`, `syntax`, `info_text`) VALUES
-(1, 'int', '<input type="number" name="%field_id%" id="%field_id%" value="%field_value%" class="int"  %ngm%>', 'zB 1,2,3,4 usw.'),
-(2, 'float', '<input type="number" name="%field_id%" id="%field_id%" value="%field_value%" class="float"  %ngm%>', 'zb 7,5 oder 1,1415\r\n'),
-(3, 'text', '<input type="text" name="%field_id%" id="%field_id%" value="%field_value%" class="text" %ngm%>', ''),
-(4, 'id', '<input type="number" name="%field_id%" id="%field_id%" value="%next_auto_index%" class="int"  %ngm% disabled>', ''),
-(5, 'date', '', ''),
-(6, 'file', '', ''),
-(7, 'image', '', 'jpgeg/png/gif'),
-(8, 'dropdown', '<select name="%field_id%" id="%field_id%" %ngm%>%dropdown_values%</select>', '');
+INSERT INTO `field_types` (`id`, `title`, `syntax`, `info_text`, `order_id`, `active`) VALUES
+(1, 'int', '<input type=\"number\" name=\"%field_id%\" id=\"%field_id%\" value=\"%field_value%\" class=\"int\"  %ngm%>', 'zB 1,2,3,4 usw.', 1, 1),
+(2, 'float', '<input type=\"number\" name=\"%field_id%\" id=\"%field_id%\" value=\"%field_value%\" class=\"float\"  %ngm%>', 'zb 7,5 oder 1,1415\r\n', 2, 1),
+(3, 'text', '<input type=\"text\" name=\"%field_id%\" id=\"%field_id%\" value=\"%field_value%\" class=\"text\" %ngm%>', '', 3, 1),
+(4, 'id', '<input type=\"number\" name=\"%field_id%\" id=\"%field_id%\" value=\"%next_auto_index%\" class=\"int\"  %ngm% disabled>', '', 0, 1),
+(5, 'date', '<input type=\"datetime-local\" name=\"%field_id%\" id=\"%field_id%\" value=\"%field_value%\" class=\"datetime\" %ngm%>', '', 5, 1),
+(6, 'file', '<input type=\"file\" change=\"fileChange($event)\" placeholder=\"Upload file\" accept=\".pdf,.doc,.docx\">', '', 6, 1),
+(7, 'image', '<input type=\"file\" (change)=\"fileChange($event)\" placeholder=\"Upload file\" accept=\".pdf,.doc,.docx\">', 'jpgeg/png/gif', 7, 0),
+(8, 'dropdown', '<select name=\"%field_id%\" id=\"%field_id%\" %ngm%>%dropdown_values%</select>', '', 8, 1);
 
 -- --------------------------------------------------------
 

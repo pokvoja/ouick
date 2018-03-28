@@ -396,8 +396,7 @@ app.controller('tableMenuController',function($scope){
 app.controller('tableController',function($scope,$compile, $sce, $http, typeFactory, tableDataFactory){
 
 	  $scope.loadTables = function(){
-	  	console.log('loading tables...');
-		$http.post('api.php?action=tables/get', {dataset_id:1}, {
+		$http.post('api.php?action=tables/get', {dataset_id:$scope.dataset_id}, {
         	headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'},
         	transformRequest: transform
     	}).then(function successCallback(response) {
